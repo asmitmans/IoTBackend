@@ -17,36 +17,36 @@ Built with **Spring Boot 3.5**, **PostgreSQL**, **Flyway**, and **Docker**.
 ## Quickstart
 
 ### 1. Clone repository
-
-git clone <repo-url>
+```bash
+git clone <repo-url>  
 cd IoTBackend
+```
 
 ### 2. Configure environment
-
-cp .env.example .env
-
+```bash
+cp .env.example .env  
+```
 Edit `.env` if needed.
 
 ### 3. Start database
-
+```bash
 docker compose up -d
+```
 
 ### 4. Run application
-
+```bash
 ./mvnw spring-boot:run
-
+```
 ---
 
 ## Verify service
-
+```bash
 curl http://localhost:8080/actuator/health
-
+```
 Expected response:
 
 ```
-
 {"status":"UP"}
-
 ```
 
 ---
@@ -58,9 +58,7 @@ Database schema is managed using **Flyway migrations**.
 Migrations are located in:
 
 ```
-
 src/main/resources/db/migration
-
 ```
 
 ---
