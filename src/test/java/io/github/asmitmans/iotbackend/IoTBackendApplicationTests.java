@@ -1,4 +1,4 @@
-package io.github.asmitmans.IoTBackend;
+package io.github.asmitmans.iotbackend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

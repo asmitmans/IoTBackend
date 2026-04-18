@@ -1,4 +1,4 @@
-package io.github.asmitmans.IoTBackend;
+package io.github.asmitmans.iotbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
