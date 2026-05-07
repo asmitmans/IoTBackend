@@ -6,6 +6,7 @@ CREATE TABLE location (
     parent_id   BIGINT       REFERENCES location(id),
     name        VARCHAR(100) NOT NULL,
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     UNIQUE (company_id, parent_id, name)
 );
 
@@ -48,8 +49,8 @@ CREATE TABLE device_config (
     reported_value  VARCHAR(255),
     status          VARCHAR(20)  NOT NULL DEFAULT 'PENDING'
                         CHECK (status IN ('PENDING', 'SYNCED', 'CONFLICT')),
-    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (device_id, key)
 );
 
