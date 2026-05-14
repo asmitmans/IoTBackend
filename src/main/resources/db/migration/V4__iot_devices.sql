@@ -9,7 +9,7 @@ CREATE TABLE device_model (
 
 CREATE TABLE device (
     id                  BIGSERIAL    PRIMARY KEY,
-    company_id          BIGINT       NOT NULL REFERENCES company(id),
+    company_id          BIGINT       REFERENCES company(id),
     device_model_id     BIGINT       NOT NULL REFERENCES device_model(id),
     serial_number       VARCHAR(100) NOT NULL UNIQUE,
     name                VARCHAR(100) NOT NULL,

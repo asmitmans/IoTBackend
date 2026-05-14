@@ -51,6 +51,20 @@ public class GlobalExceptionHandler {
                      request.getRequestURI(), null);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(
+            ResourceNotFoundException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(
+            ConflictException ex,
+            HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), null);
+    }
+
     private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message,
                                                       String path, Map<String, String> errors) {
         Map<String, Object> body = new HashMap<>();
@@ -64,4 +78,6 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.status(status).body(body);
     }
+
+
 }
