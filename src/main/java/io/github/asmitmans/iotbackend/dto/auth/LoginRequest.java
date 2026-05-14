@@ -1,4 +1,4 @@
-package io.github.asmitmans.iotbackend.dto.request;
+package io.github.asmitmans.iotbackend.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

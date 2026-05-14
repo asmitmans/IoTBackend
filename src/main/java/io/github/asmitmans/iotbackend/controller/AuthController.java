@@ -1,7 +1,7 @@
 package io.github.asmitmans.iotbackend.controller;
 
-import io.github.asmitmans.iotbackend.dto.request.LoginRequest;
-import io.github.asmitmans.iotbackend.dto.response.LoginResponse;
+import io.github.asmitmans.iotbackend.dto.auth.LoginRequest;
+import io.github.asmitmans.iotbackend.dto.auth.LoginResponse;
 import io.github.asmitmans.iotbackend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
