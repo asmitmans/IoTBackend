@@ -1,21 +1,19 @@
 package io.github.asmitmans.iotbackend.dto.device;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class DeviceRegistrationRequest {
 
-    private String serialNumber;
+    @NotBlank
     private String name;
+
+    @NotNull
     private Long deviceModelId;
+
     private Long locationId;
 
     public DeviceRegistrationRequest() {
-    }
-
-    public String getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
     }
 
     public String getName() {

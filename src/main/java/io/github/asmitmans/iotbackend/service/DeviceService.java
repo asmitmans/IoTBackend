@@ -12,6 +12,8 @@ import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import io.github.asmitmans.iotbackend.repository.LocationRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class DeviceService {
 
@@ -31,9 +33,11 @@ public class DeviceService {
     }
 
     public DeviceRegistrationResponse register(DeviceRegistrationRequest request) {
-        if (deviceRepository.findBySerialNumber(request.getSerialNumber()).isPresent()) {
-            throw new ConflictException("Serial number already registered");
-        }
+
+        String serialNumber;
+        do {
+            serialNumber = UUID.randomUUID().toString();
+        } while (deviceRepository.findBySerialNumber(serialNumber).isPresent());
 
         DeviceModel model = deviceModelRepository.findById(request.getDeviceModelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
@@ -45,7 +49,7 @@ public class DeviceService {
         }
 
         Device device = new Device();
-        device.setSerialNumber(request.getSerialNumber());
+        device.setSerialNumber(serialNumber);
         device.setName(request.getName());
         device.setDeviceModel(model);
         device.setLocation(location);
