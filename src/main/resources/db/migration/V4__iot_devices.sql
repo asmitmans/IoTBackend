@@ -17,8 +17,9 @@ CREATE TABLE device (
     api_key_prefix      VARCHAR(8),
     current_config_hash VARCHAR(8),
     claimed_at          TIMESTAMPTZ,
+    claim_expires_at    TIMESTAMPTZ,
     status              VARCHAR(20)  NOT NULL DEFAULT 'UNCLAIMED'
-        CHECK (status IN ('UNCLAIMED', 'ACTIVE', 'INACTIVE')),
+        CHECK (status IN ('UNCLAIMED', 'PENDING', 'ACTIVE', 'INACTIVE')),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
