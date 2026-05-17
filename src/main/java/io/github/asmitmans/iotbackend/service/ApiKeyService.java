@@ -23,7 +23,7 @@ public class ApiKeyService {
         return "iotdev_" + HexFormat.of().formatHex(bytes);
     }
 
-    public String extracPrefix(String apiKey) {
+    public String extractPrefix(String apiKey) {
         return apiKey.substring(0, 8);
     }
 
