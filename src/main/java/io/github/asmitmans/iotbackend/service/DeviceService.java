@@ -10,6 +10,7 @@ import io.github.asmitmans.iotbackend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ public class DeviceService {
     private final DeviceModelRepository deviceModelRepository;
     private final LocationRepository locationRepository;
     private final ApiKeyService apiKeyService;
+
+    private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     public DeviceService(DeviceRepository deviceRepository, UserRepository userRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService) {
         this.deviceRepository = deviceRepository;
@@ -34,7 +37,7 @@ public class DeviceService {
 
         String serialNumber;
         do {
-            serialNumber = UUID.randomUUID().toString();
+            serialNumber = generateSerial();
         } while (deviceRepository.findBySerialNumber(serialNumber).isPresent());
 
         DeviceModel model = deviceModelRepository.findById(request.getDeviceModelId())
@@ -125,5 +128,14 @@ public class DeviceService {
 
     return response;
   }
+
+    private String generateSerial() {
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 16; i++) {
+            sb.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
+        }
+        return sb.toString();
+    }
 
 }
