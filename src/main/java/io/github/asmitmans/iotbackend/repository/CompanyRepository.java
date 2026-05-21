@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
 
     Optional<Company> findByApiKeyHash(String apiKeyHash);
+    Optional<Company> findByApiKeyPrefix(String apiKeyPrefix);
+
 }
