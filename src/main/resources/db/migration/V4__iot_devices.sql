@@ -15,9 +15,11 @@ CREATE TABLE device (
     name                VARCHAR(100) NOT NULL,
     api_key_hash        VARCHAR(255),
     api_key_prefix      VARCHAR(8),
-    current_config_hash VARCHAR(8),
     claimed_at          TIMESTAMPTZ,
     claim_expires_at    TIMESTAMPTZ,
+    config_pending      BOOLEAN      NOT NULL DEFAULT FALSE,
+    command_pending     BOOLEAN      NOT NULL DEFAULT FALSE,
+    last_seen_at        TIMESTAMPTZ,
     status              VARCHAR(20)  NOT NULL DEFAULT 'UNCLAIMED'
         CHECK (status IN ('UNCLAIMED', 'PENDING', 'ACTIVE', 'INACTIVE')),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

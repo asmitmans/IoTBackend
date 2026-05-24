@@ -1,12 +1,10 @@
 package io.github.asmitmans.iotbackend.dto.ingest;
 
-import java.util.Map;
-
 public class IngestResponse {
 
     private String status;
-    private String configAction;
-    private java.util.Map<String, String> config;
+    private boolean configPending;
+    private boolean commandPending;
 
     public IngestResponse() {
     }
@@ -19,19 +17,19 @@ public class IngestResponse {
         this.status = status;
     }
 
-    public String getConfigAction() {
-        return configAction;
+    public boolean isConfigPending() {
+        return configPending;
     }
 
-    public void setConfigAction(String configAction) {
-        this.configAction = configAction;
+    public void setConfigPending(boolean configPending) {
+        this.configPending = configPending;
     }
 
-    public Map<String, String> getConfig() {
-        return config;
+    public boolean isCommandPending() {
+        return commandPending;
     }
 
-    public void setConfig(Map<String, String> config) {
-        this.config = config;
+    public void setCommandPending(boolean commandPending) {
+        this.commandPending = commandPending;
     }
 }

@@ -32,14 +32,8 @@ public class Measurement {
     @Column(name = "payload", nullable = false, columnDefinition = "jsonb")
     private String payload;
 
-    @Column(name = "config_version")
-    private Long configVersion;
-
     @Column(name = "sequence_number")
     private Long sequenceNumber;
-
-    @Column(name = "config_checksum", length = 8)
-    private String configChecksum;
 
     @PrePersist
     protected void onCreate() {
@@ -93,28 +87,12 @@ public class Measurement {
         this.payload = payload;
     }
 
-    public Long getConfigVersion() {
-        return configVersion;
-    }
-
-    public void setConfigVersion(Long configVersion) {
-        this.configVersion = configVersion;
-    }
-
     public Long getSequenceNumber() {
         return sequenceNumber;
     }
 
     public void setSequenceNumber(Long sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
-    }
-
-    public String getConfigChecksum() {
-        return configChecksum;
-    }
-
-    public void setConfigChecksum(String configChecksum) {
-        this.configChecksum = configChecksum;
     }
 
     @Override

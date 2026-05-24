@@ -8,12 +8,11 @@ import java.time.Instant;
 public class IngestRequest {
 
     @NotNull
-    private java.time.Instant recordedAt;
+    private Instant recordedAt;
 
     @NotBlank
     private String payload;
 
-    private String configChecksum;
     private Long sequenceNumber;
 
     public IngestRequest() {
@@ -33,14 +32,6 @@ public class IngestRequest {
 
     public void setPayload(String payload) {
         this.payload = payload;
-    }
-
-    public String getConfigChecksum() {
-        return configChecksum;
-    }
-
-    public void setConfigChecksum(String configChecksum) {
-        this.configChecksum = configChecksum;
     }
 
     public Long getSequenceNumber() {

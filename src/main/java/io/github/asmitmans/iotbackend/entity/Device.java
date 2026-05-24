@@ -36,14 +36,20 @@ public class Device extends AuditableEntity {
     @Column(length = 8)
     private String apiKeyPrefix;
 
-    @Column(length = 8)
-    private String currentConfigHash;
-
     @Column(name = "claimed_at")
     private Instant claimedAt;
 
     @Column(name = "claim_expires_at")
     private Instant claimExpiresAt;
+
+    @Column(name = "config_pending", nullable = false)
+    private boolean configPending = false;
+
+    @Column(name = "command_pending", nullable = false)
+    private boolean commandPending = false;
+
+    @Column(name = "last_seen_at")
+    private Instant lastSeenAt;
 
     @Column(nullable = false, length = 20)
     private String status;
@@ -83,14 +89,20 @@ public class Device extends AuditableEntity {
     public String getApiKeyPrefix() { return apiKeyPrefix; }
     public void setApiKeyPrefix(String apiKeyPrefix) { this.apiKeyPrefix = apiKeyPrefix; }
 
-    public String getCurrentConfigHash() { return currentConfigHash; }
-    public void setCurrentConfigHash(String currentConfigHash) { this.currentConfigHash = currentConfigHash; }
-
     public Instant getClaimedAt() { return claimedAt; }
     public void setClaimedAt(Instant claimedAt) { this.claimedAt = claimedAt; }
 
     public Instant getClaimExpiresAt() { return claimExpiresAt; }
     public void setClaimExpiresAt(Instant claimExpiresAt) { this.claimExpiresAt = claimExpiresAt; }
+
+    public boolean isConfigPending() { return configPending; }
+    public void setConfigPending(boolean configPending) { this.configPending = configPending; }
+
+    public boolean isCommandPending() { return commandPending; }
+    public void setCommandPending(boolean commandPending) { this.commandPending = commandPending; }
+
+    public Instant getLastSeenAt() { return lastSeenAt; }
+    public void setLastSeenAt(Instant lastSeenAt) { this.lastSeenAt = lastSeenAt; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

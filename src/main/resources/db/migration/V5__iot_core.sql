@@ -25,9 +25,7 @@ CREATE TABLE measurement (
     company_id       BIGINT       NOT NULL,
     recorded_at      TIMESTAMPTZ  NOT NULL,
     received_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    config_version   BIGINT,
     sequence_number  BIGINT,
-    config_checksum  VARCHAR(8),
     payload          JSONB        NOT NULL
 );
 
