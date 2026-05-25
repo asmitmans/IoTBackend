@@ -19,7 +19,6 @@ CREATE TABLE device (
     claim_expires_at    TIMESTAMPTZ,
     config_pending      BOOLEAN      NOT NULL DEFAULT FALSE,
     command_pending     BOOLEAN      NOT NULL DEFAULT FALSE,
-    last_seen_at        TIMESTAMPTZ,
     status              VARCHAR(20)  NOT NULL DEFAULT 'UNCLAIMED'
         CHECK (status IN ('UNCLAIMED', 'PENDING', 'ACTIVE', 'INACTIVE')),
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

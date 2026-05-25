@@ -48,9 +48,6 @@ public class Device extends AuditableEntity {
     @Column(name = "command_pending", nullable = false)
     private boolean commandPending = false;
 
-    @Column(name = "last_seen_at")
-    private Instant lastSeenAt;
-
     @Column(nullable = false, length = 20)
     private String status;
 
@@ -100,9 +97,6 @@ public class Device extends AuditableEntity {
 
     public boolean isCommandPending() { return commandPending; }
     public void setCommandPending(boolean commandPending) { this.commandPending = commandPending; }
-
-    public Instant getLastSeenAt() { return lastSeenAt; }
-    public void setLastSeenAt(Instant lastSeenAt) { this.lastSeenAt = lastSeenAt; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
