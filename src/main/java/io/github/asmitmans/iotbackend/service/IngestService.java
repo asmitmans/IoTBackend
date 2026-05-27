@@ -4,12 +4,9 @@ import io.github.asmitmans.iotbackend.dto.ingest.IngestRequest;
 import io.github.asmitmans.iotbackend.dto.ingest.IngestResponse;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.entity.Measurement;
-import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import io.github.asmitmans.iotbackend.repository.MeasurementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 
 @Service
 public class IngestService {
@@ -31,11 +28,11 @@ public class IngestService {
         measurement.setSequenceNumber(request.getSequenceNumber());
         measurementRepository.save(measurement);
 
-        IngestResponse respose = new IngestResponse();
-        respose.setStatus("OK");
-        respose.setConfigPending(device.isConfigPending());
-        respose.setCommandPending(device.isCommandPending());
+        IngestResponse response = new IngestResponse();
+        response.setStatus("OK");
+        response.setConfigPending(device.isConfigPending());
+        response.setCommandPending(device.isCommandPending());
 
-        return respose;
+        return response;
     }
 }

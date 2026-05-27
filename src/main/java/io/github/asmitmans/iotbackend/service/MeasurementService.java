@@ -32,7 +32,10 @@ public class MeasurementService {
 
     private List<Long> resolveDeviceIds(List<Long> deviceIds, Long companyId) {
         if (deviceIds != null && !deviceIds.isEmpty()) {
-            return deviceIds;
+            return deviceRepository.findByIdInAndCompanyId(deviceIds, companyId)
+                                   .stream()
+                                   .map(d -> d.getId())
+                                   .collect(Collectors.toList());
         }
         return deviceRepository.findByCompanyId(companyId)
                                .stream()

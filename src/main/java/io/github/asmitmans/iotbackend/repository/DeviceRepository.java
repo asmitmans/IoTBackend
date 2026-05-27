@@ -21,4 +21,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findBySerialNumberForUpdate(@Param("serial") String serial);
 
     List<Device> findByCompanyId(Long companyId);
+    List<Device> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+
 }
