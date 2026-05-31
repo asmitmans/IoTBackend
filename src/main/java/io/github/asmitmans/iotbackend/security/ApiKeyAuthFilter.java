@@ -7,6 +7,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,17 +20,19 @@ import java.util.List;
 
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
-
     private final DeviceRepository deviceRepository;
     private final CompanyRepository companyRepository;
     private final ApiKeyService apiKeyService;
+    private final CacheManager cacheManager;
 
     public ApiKeyAuthFilter(DeviceRepository deviceRepository,
                             CompanyRepository companyRepository,
-                            ApiKeyService apiKeyService) {
+                            ApiKeyService apiKeyService,
+                            CacheManager cacheManager) {
         this.deviceRepository = deviceRepository;
         this.companyRepository = companyRepository;
         this.apiKeyService = apiKeyService;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -56,18 +60,42 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     }
 
     private void authenticateDevice(String apiKey) {
+        Cache cache = cacheManager.getCache("deviceAuth");
+        Cache.ValueWrapper cached = cache.get(apiKey);
+
+        if (cached != null) {
+            setAuthentication(cached.get(), "ROLE_DEVICE");
+            return;
+        }
+
         String prefix = apiKeyService.extractPrefix(apiKey);
-        deviceRepository.findByApiKeyPrefix(prefix)
+        deviceRepository.findByApiKeyPrefix(prefix).stream()
                         .filter(d -> d.getStatus().equals("ACTIVE"))
                         .filter(d -> apiKeyService.verify(apiKey, d.getApiKeyHash()))
-                        .ifPresent(d -> setAuthentication(d, "ROLE_DEVICE"));
+                        .findFirst()
+                        .ifPresent(d -> {
+                            cache.put(apiKey, d);
+                            setAuthentication(d, "ROLE_DEVICE");
+                        });
     }
 
     private void authenticateCompany(String apiKey) {
+        Cache cache = cacheManager.getCache("companyAuth");
+        Cache.ValueWrapper cached = cache.get(apiKey);
+
+        if (cached != null) {
+            setAuthentication(cached.get(), "ROLE_COMPANY");
+            return;
+        }
+
         String prefix = apiKeyService.extractPrefix(apiKey);
-        companyRepository.findByApiKeyPrefix(prefix)
+        companyRepository.findByApiKeyPrefix(prefix).stream()
                          .filter(c -> apiKeyService.verify(apiKey, c.getApiKeyHash()))
-                         .ifPresent(c -> setAuthentication(c, "ROLE_COMPANY"));
+                         .findFirst()
+                         .ifPresent(c -> {
+                             cache.put(apiKey, c);
+                             setAuthentication(c, "ROLE_COMPANY");
+                         });
     }
 
     private void setAuthentication(Object principal, String role) {

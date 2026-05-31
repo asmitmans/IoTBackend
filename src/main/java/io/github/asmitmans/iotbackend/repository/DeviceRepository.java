@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, Long> {
-    Optional<Device> findByApiKeyPrefix(String apiKeyPrefix);
+    List<Device> findByApiKeyPrefix(String apiKeyPrefix);
     Optional<Device> findBySerialNumber(String serialNumber);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

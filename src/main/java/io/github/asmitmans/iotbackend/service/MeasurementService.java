@@ -46,9 +46,7 @@ public class MeasurementService {
     private MeasurementResponse toResponse(Measurement m) {
         MeasurementResponse r = new MeasurementResponse();
         r.setId(m.getId());
-        r.setDeviceId(m.getDevice().getId());
-        r.setDeviceName(m.getDevice().getName());
-        r.setSerialNumber(m.getDevice().getSerialNumber());
+        r.setDeviceId(m.getDeviceId());
         r.setRecordedAt(m.getRecordedAt());
         r.setReceivedAt(m.getReceivedAt());
         r.setPayload(m.getPayload());

@@ -6,8 +6,6 @@ public class MeasurementResponse {
 
     private Long id;
     private Long deviceId;
-    private String deviceName;
-    private String serialNumber;
     private Instant recordedAt;
     private Instant receivedAt;
     private String payload;
@@ -29,22 +27,6 @@ public class MeasurementResponse {
 
     public void setDeviceId(Long deviceId) {
         this.deviceId = deviceId;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
-
-    public String getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
     }
 
     public Instant getRecordedAt() {
@@ -70,4 +52,5 @@ public class MeasurementResponse {
     public void setPayload(String payload) {
         this.payload = payload;
     }
+
 }

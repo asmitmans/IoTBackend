@@ -105,4 +105,9 @@ public class Measurement {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public Long getDeviceId() {
+        return device != null ? device.getId() : null;
+    }
+
 }
