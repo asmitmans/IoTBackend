@@ -4,8 +4,12 @@ import io.github.asmitmans.iotbackend.dto.measurement.MeasurementResponse;
 import io.github.asmitmans.iotbackend.entity.Measurement;
 import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import io.github.asmitmans.iotbackend.repository.MeasurementRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,4 +56,33 @@ public class MeasurementService {
         r.setPayload(m.getPayload());
         return r;
     }
+
+    public Page<MeasurementResponse> getByTimeRange(
+            Long deviceId,
+            Instant from,
+            Instant to,
+            int page,
+            int size,
+            Long companyId) {
+
+        int safeSize = Math.min(size, 500);
+        Pageable pageable = PageRequest.of(page, safeSize);
+
+        return measurementRepository
+                .findByDeviceIdAndTimeRange(deviceId, companyId, from, to, pageable)
+                .map(this::toResponse);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

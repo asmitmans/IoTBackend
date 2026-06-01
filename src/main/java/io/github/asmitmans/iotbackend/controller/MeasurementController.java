@@ -3,6 +3,7 @@ package io.github.asmitmans.iotbackend.controller;
 import io.github.asmitmans.iotbackend.dto.measurement.MeasurementResponse;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import io.github.asmitmans.iotbackend.service.MeasurementService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -31,4 +33,21 @@ public class MeasurementController {
         return ResponseEntity.ok(
                 measurementService.getLatest(deviceIds, principal.getCompanyId()));
     }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Page<MeasurementResponse>> getByTimeRange(
+            @RequestParam Long deviceId,
+            @RequestParam Instant from,
+            @RequestParam Instant to,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                measurementService.getByTimeRange(
+                        deviceId, from, to, page, size,
+                        principal.getCompanyId()));
+    }
+
 }
+
