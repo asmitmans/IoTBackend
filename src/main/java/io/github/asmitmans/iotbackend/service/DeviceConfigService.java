@@ -26,6 +26,7 @@ public class DeviceConfigService {
     }
 
     // GET /config -> device read desired values
+    @Transactional(readOnly = true)
     public DeviceConfigResponse getConfig(Device device) {
         Map<String, String> desired = deviceConfigRepository
                 .findByDeviceId(device.getId())
