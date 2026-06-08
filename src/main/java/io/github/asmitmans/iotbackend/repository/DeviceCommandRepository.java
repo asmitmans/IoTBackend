@@ -13,4 +13,6 @@ public interface DeviceCommandRepository extends JpaRepository<DeviceCommand,
     Optional<DeviceCommand> findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(Long deviceId, String status);
 
     boolean existsByDeviceIdAndStatus(Long deviceId, String status);
+
+    boolean existsByDeviceIdAndStatusAndType(Long deviceId, String status, String type);
 }

@@ -3,6 +3,7 @@ package io.github.asmitmans.iotbackend.controller;
 import io.github.asmitmans.iotbackend.dto.device.*;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
+import io.github.asmitmans.iotbackend.service.DeviceCommandService;
 import io.github.asmitmans.iotbackend.service.DeviceConfigService;
 import io.github.asmitmans.iotbackend.service.DeviceService;
 import jakarta.validation.Valid;
@@ -19,11 +20,13 @@ public class DeviceController {
 
     private final DeviceService deviceService;
     private final DeviceConfigService deviceConfigService;
+    private final DeviceCommandService deviceCommandService;
 
     public DeviceController(DeviceService deviceService,
-                            DeviceConfigService deviceConfigService) {
+                            DeviceConfigService deviceConfigService, DeviceCommandService deviceCommandService) {
         this.deviceService = deviceService;
         this.deviceConfigService = deviceConfigService;
+        this.deviceCommandService = deviceCommandService;
     }
 
     @PostMapping
@@ -76,5 +79,26 @@ public class DeviceController {
         Device device = (Device) authentication.getPrincipal();
         deviceConfigService.reportState(device, request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{deviceId}/commands")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Void> createCommand(
+            @PathVariable Long deviceId,
+            @RequestBody @Valid CreateCommandRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        deviceCommandService.createCommand(deviceId, request, principal.getCompanyId());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/{deviceId}/commands/next")
+    @PreAuthorize("hasRole('DEVICE')")
+    public ResponseEntity<DeviceCommandResponse> getNextCommand(
+            @PathVariable Long deviceId,
+            Authentication authentication) {
+        Device device = (Device) authentication.getPrincipal();
+        return deviceCommandService.getNextCommand(device)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }
