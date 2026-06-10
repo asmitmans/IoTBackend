@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -126,8 +127,24 @@ public class DeviceService {
     response.setStatus(device.getStatus());
     response.setApiKeyPlain(apiKeyPlain);
 
-    return response;
-  }
+        return response;
+    }
+
+    @Transactional
+    public void updateStatus(Long deviceId, String newStatus, Long companyId) {
+        Device device = deviceRepository.findById(deviceId)
+                .filter(d -> d.getCompany() != null &&
+                        d.getCompany().getId().longValue() == companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+
+        List<String> validStatuses = List.of("ACTIVE", "INACTIVE");
+        if (!validStatuses.contains(newStatus)) {
+            throw new IllegalArgumentException("Invalid status: " + newStatus);
+        }
+
+        device.setStatus(newStatus);
+        deviceRepository.save(device);
+    }
 
     private String generateSerial() {
         SecureRandom random = new SecureRandom();
@@ -137,5 +154,7 @@ public class DeviceService {
         }
         return sb.toString();
     }
+
+
 
 }

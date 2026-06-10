@@ -7,6 +7,8 @@ import io.github.asmitmans.iotbackend.service.DeviceCommandService;
 import io.github.asmitmans.iotbackend.service.DeviceConfigService;
 import io.github.asmitmans.iotbackend.service.DeviceService;
 import jakarta.validation.Valid;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,12 +23,14 @@ public class DeviceController {
     private final DeviceService deviceService;
     private final DeviceConfigService deviceConfigService;
     private final DeviceCommandService deviceCommandService;
+    private final CacheManager cacheManager;
 
     public DeviceController(DeviceService deviceService,
-                            DeviceConfigService deviceConfigService, DeviceCommandService deviceCommandService) {
+                            DeviceConfigService deviceConfigService, DeviceCommandService deviceCommandService, CacheManager cacheManager) {
         this.deviceService = deviceService;
         this.deviceConfigService = deviceConfigService;
         this.deviceCommandService = deviceCommandService;
+        this.cacheManager = cacheManager;
     }
 
     @PostMapping
@@ -100,5 +104,17 @@ public class DeviceController {
         return deviceCommandService.getNextCommand(device)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.noContent().build());
+    }
+
+    @PatchMapping("/{deviceId}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable Long deviceId,
+            @RequestParam String status,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        deviceService.updateStatus(deviceId, status, principal.getCompanyId());
+        Cache cache = cacheManager.getCache("deviceAuth");
+        if (cache != null) cache.clear();
+        return ResponseEntity.ok().build();
     }
 }
