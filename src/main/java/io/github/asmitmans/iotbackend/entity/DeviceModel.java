@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "device_model")
@@ -20,6 +22,22 @@ public class DeviceModel extends AuditableEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "config_schema", columnDefinition = "jsonb")
     private String configSchema;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "device_model_measurement",  // ← correcto
+            joinColumns = @JoinColumn(name = "device_model_id"),
+            inverseJoinColumns = @JoinColumn(name = "measurement_type_id")
+    )
+    private Set<MeasurementType> measurementTypes = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "device_model_command",
+            joinColumns = @JoinColumn(name = "device_model_id"),
+            inverseJoinColumns = @JoinColumn(name = "command_type_id")
+    )
+    private Set<CommandType> commandTypes = new HashSet<>();
 
     public DeviceModel() {}
 
@@ -45,6 +63,22 @@ public class DeviceModel extends AuditableEntity {
 
     public void setConfigSchema(String configSchema) {
         this.configSchema = configSchema;
+    }
+
+    public Set<MeasurementType> getMeasurementTypes() {
+        return measurementTypes;
+    }
+
+    public void setMeasurementTypes(Set<MeasurementType> measurementTypes) {
+        this.measurementTypes = measurementTypes;
+    }
+
+    public Set<CommandType> getCommandTypes() {
+        return commandTypes;
+    }
+
+    public void setCommandTypes(Set<CommandType> commandTypes) {
+        this.commandTypes = commandTypes;
     }
 
     @Override
