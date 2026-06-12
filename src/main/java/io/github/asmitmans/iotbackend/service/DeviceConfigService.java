@@ -76,7 +76,9 @@ public class DeviceConfigService {
     @Transactional
     public void setDesiredConfig(Long deviceId, AdminConfigRequest request, Long companyId) {
         Device device = deviceRepository.findById(deviceId)
-                                        .filter(d -> d.getCompany().getId().longValue() == companyId)
+                                        .filter(d -> companyId == null ||
+                                                (d.getCompany() != null &&
+                                                        d.getCompany().getId().longValue() == companyId))
                                         .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         request.getDesired().forEach((key, value) -> {

@@ -11,6 +11,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -65,11 +66,18 @@ public class DeviceController {
     }
 
     @PutMapping("/{deviceId}/config")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> setConfig(
             @PathVariable Long deviceId,
             @RequestBody @Valid AdminConfigRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
+
+        if (!principal.getAuthorities().stream()
+                      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                && principal.getCompanyId() == null) {
+            throw new AccessDeniedException("User has no associated company");
+        }
+
         deviceConfigService.setDesiredConfig(deviceId, request, principal.getCompanyId());
         return ResponseEntity.ok().build();
     }
