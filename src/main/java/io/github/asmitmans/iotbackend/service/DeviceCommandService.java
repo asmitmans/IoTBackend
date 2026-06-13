@@ -29,19 +29,24 @@ public class DeviceCommandService {
     public void createCommand(Long deviceId, CreateCommandRequest request,
                               Long companyId) {
         Device device = deviceRepository.findById(deviceId)
-                .filter(d -> d.getCompany() != null &&
-                        d.getCompany().getId().longValue() == companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not " +
-                                                                         "found"));
+                                        .filter(d -> companyId == null ||
+                                                (d.getCompany() != null &&
+                                                        d.getCompany().getId().longValue() == companyId))
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+
+        Long effectiveCompanyId = companyId != null ?
+                companyId : device.getCompany().getId().longValue();
 
         if (deviceCommandRepository.existsByDeviceIdAndStatusAndType(device.getId(), "QUEUED", request.getType())) {
             throw new ConflictException("Command of type '" + request.getType() +
                     "' already queued for this device");
         }
 
+
+
         DeviceCommand command = new DeviceCommand();
         command.setDevice(device);
-        command.setCompanyId(companyId);
+        command.setCompanyId(effectiveCompanyId);
         command.setType(request.getType());
         command.setPayload(request.getPayload());
         command.setStatus("QUEUED");

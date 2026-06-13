@@ -99,6 +99,13 @@ public class DeviceController {
             @PathVariable Long deviceId,
             @RequestBody @Valid CreateCommandRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
+
+        if (!principal.getAuthorities().stream()
+                      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
+                && principal.getCompanyId() == null) {
+            throw new AccessDeniedException("User has no associated company");
+        }
+
         deviceCommandService.createCommand(deviceId, request, principal.getCompanyId());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
