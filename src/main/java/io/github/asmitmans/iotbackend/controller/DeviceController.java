@@ -125,11 +125,9 @@ public class DeviceController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateStatus(
             @PathVariable Long deviceId,
-            @RequestParam String status,
-            @AuthenticationPrincipal UserPrincipal principal) {
-        deviceService.updateStatus(deviceId, status, principal.getCompanyId());
-        Cache cache = cacheManager.getCache("deviceAuth");
-        if (cache != null) cache.clear();
+            @RequestParam String status) {
+        deviceService.updateStatus(deviceId, status);
+        cacheManager.getCache("deviceAuth").clear();
         return ResponseEntity.ok().build();
     }
 }

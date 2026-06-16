@@ -131,11 +131,9 @@ public class DeviceService {
     }
 
     @Transactional
-    public void updateStatus(Long deviceId, String newStatus, Long companyId) {
+    public void updateStatus(Long deviceId, String newStatus) {
         Device device = deviceRepository.findById(deviceId)
-                .filter(d -> d.getCompany() != null &&
-                        d.getCompany().getId().longValue() == companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         List<String> validStatuses = List.of("ACTIVE", "INACTIVE");
         if (!validStatuses.contains(newStatus)) {
