@@ -1,8 +1,6 @@
-package io.github.asmitmans.iotbackend.dto.measurement;
+package io.github.asmitmans.iotbackend.dto.measurementtype;
 
 import jakarta.validation.constraints.NotBlank;
-
-import java.util.Objects;
 
 public class MeasurementTypeRequest {
 

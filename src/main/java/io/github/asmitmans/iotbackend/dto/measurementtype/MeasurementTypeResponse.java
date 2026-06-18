@@ -1,4 +1,4 @@
-package io.github.asmitmans.iotbackend.dto.measurement;
+package io.github.asmitmans.iotbackend.dto.measurementtype;
 
 public class MeasurementTypeResponse {
 
