@@ -1,0 +1,5 @@
+-- V9__fix_company_id_type.sql
+ALTER TABLE company ALTER COLUMN id TYPE BIGINT;
+ALTER TABLE users ALTER COLUMN company_id TYPE BIGINT;
+ALTER TABLE device ALTER COLUMN company_id TYPE BIGINT;
+ALTER TABLE location ALTER COLUMN company_id TYPE BIGINT;
