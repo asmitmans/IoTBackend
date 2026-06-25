@@ -2,12 +2,12 @@ package io.github.asmitmans.iotbackend.controller;
 
 import io.github.asmitmans.iotbackend.dto.location.LocationRequest;
 import io.github.asmitmans.iotbackend.dto.location.LocationResponse;
+import io.github.asmitmans.iotbackend.security.CompanyResolver;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import io.github.asmitmans.iotbackend.service.LocationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -19,16 +19,20 @@ import java.util.List;
 public class LocationController {
 
     private final LocationService locationService;
+    private final CompanyResolver companyResolver;
 
-    public LocationController(LocationService locationService) {
+    public LocationController(LocationService locationService, CompanyResolver companyResolver) {
         this.locationService = locationService;
+        this.companyResolver = companyResolver;
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<LocationResponse>> getAll(@RequestParam(required = false) Long companyId,
-                                                         @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(locationService.getAll(resolveCompanyId(principal, companyId)));
+    public ResponseEntity<List<LocationResponse>> getAll(
+            @RequestParam(required = false) Long companyId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(
+                locationService.getAll(companyResolver.resolveCompanyId(principal, companyId)));
     }
 
     @GetMapping("/{id}")
@@ -37,7 +41,8 @@ public class LocationController {
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(locationService.getById(id,resolveCompanyId(principal, companyId)));
+        return ResponseEntity.ok(
+                locationService.getById(id, companyResolver.resolveCompanyId(principal, companyId)));
     }
 
     @PostMapping
@@ -47,8 +52,7 @@ public class LocationController {
             @RequestParam(required = false) Long companyId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(locationService
-                                           .create(request, resolveCompanyId(principal, companyId)));
+                             .body(locationService.create(request, companyResolver.resolveCompanyId(principal, companyId)));
     }
 
     @PutMapping("/{id}")
@@ -58,8 +62,8 @@ public class LocationController {
             @RequestBody @Valid LocationRequest request,
             @RequestParam(required = false) Long companyId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(locationService.update(id, request,
-                                                        resolveCompanyId(principal, companyId)));
+        return ResponseEntity.ok(
+                locationService.update(id, request, companyResolver.resolveCompanyId(principal, companyId)));
     }
 
     @DeleteMapping("/{id}")
@@ -68,24 +72,7 @@ public class LocationController {
             @PathVariable Long id,
             @RequestParam(required = false) Long companyId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        locationService.delete(id, resolveCompanyId(principal, companyId));
+        locationService.delete(id, companyResolver.resolveCompanyId(principal, companyId));
         return ResponseEntity.noContent().build();
-    }
-
-    private Long resolveCompanyId(UserPrincipal principal, Long requestedCompanyId) {
-        boolean isAdmin = principal.getAuthorities().stream()
-                                   .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
-            if (requestedCompanyId == null) {
-                throw new IllegalArgumentException("Admin must provide companyId");
-            }
-            return requestedCompanyId;
-        }
-
-        if (principal.getCompanyId() == null) {
-            throw new AccessDeniedException("User has no associated company");
-        }
-        return principal.getCompanyId();
     }
 }
