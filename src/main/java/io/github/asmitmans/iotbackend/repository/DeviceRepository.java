@@ -2,6 +2,8 @@ package io.github.asmitmans.iotbackend.repository;
 
 import io.github.asmitmans.iotbackend.entity.Device;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +25,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByCompanyId(Long companyId);
     List<Device> findByIdInAndCompanyId(List<Long> ids, Long companyId);
 
+    Page<Device> findByCompanyId(Long companyId, Pageable pageable);
+
+    Optional<Device> findByIdAndCompanyId(Long id, Long companyId);
 }

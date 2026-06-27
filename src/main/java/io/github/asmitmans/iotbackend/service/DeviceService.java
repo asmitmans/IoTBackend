@@ -1,12 +1,13 @@
 package io.github.asmitmans.iotbackend.service;
 
-import io.github.asmitmans.iotbackend.dto.device.DeviceClaimResponse;
-import io.github.asmitmans.iotbackend.dto.device.DeviceRegistrationRequest;
-import io.github.asmitmans.iotbackend.dto.device.DeviceRegistrationResponse;
+import io.github.asmitmans.iotbackend.dto.device.*;
 import io.github.asmitmans.iotbackend.entity.*;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -144,6 +145,48 @@ public class DeviceService {
         deviceRepository.save(device);
     }
 
+    @Transactional(readOnly = true)
+    public Page<DeviceListResponse> getAll(Long companyId, int page, int size) {
+        int safeSize = Math.min(size, 500);
+        Pageable pageable = PageRequest.of(page, safeSize);
+
+        return deviceRepository.findByCompanyId(companyId, pageable)
+                .map(this::toListResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public DeviceDetailResponse getById(Long deviceId, Long companyId) {
+        Device device = deviceRepository.findByIdAndCompanyId(deviceId, companyId)
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+        return toDetailResponse(device);
+    }
+
+
+    private DeviceListResponse toListResponse(Device d) {
+        DeviceListResponse r = new DeviceListResponse();
+        r.setId(d.getId());
+        r.setSerialNumber(d.getSerialNumber());
+        r.setName(d.getName());
+        r.setStatus(d.getStatus());
+        r.setDeviceModelId(d.getDeviceModel().getId());
+        r.setDeviceModelName(d.getDeviceModel().getName());
+        r.setLocationId(d.getLocation() != null ? d.getLocation().getId() : null);
+        return r;
+    }
+
+    private DeviceDetailResponse toDetailResponse(Device d) {
+        DeviceDetailResponse r = new DeviceDetailResponse();
+        r.setId(d.getId());
+        r.setSerialNumber(d.getSerialNumber());
+        r.setName(d.getName());
+        r.setStatus(d.getStatus());
+        r.setDeviceModelId(d.getDeviceModel().getId());
+        r.setDeviceModelName(d.getDeviceModel().getName());
+        r.setLocationId(d.getLocation() != null ? d.getLocation().getId() : null);
+        r.setConfigPending(d.isConfigPending());
+        r.setCommandPending(d.isCommandPending());
+        return r;
+    }
     private String generateSerial() {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();
@@ -152,7 +195,5 @@ public class DeviceService {
         }
         return sb.toString();
     }
-
-
 
 }

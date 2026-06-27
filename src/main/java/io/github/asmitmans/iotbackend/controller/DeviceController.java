@@ -2,6 +2,7 @@ package io.github.asmitmans.iotbackend.controller;
 
 import io.github.asmitmans.iotbackend.dto.device.*;
 import io.github.asmitmans.iotbackend.entity.Device;
+import io.github.asmitmans.iotbackend.security.CompanyResolver;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import io.github.asmitmans.iotbackend.service.DeviceCommandService;
 import io.github.asmitmans.iotbackend.service.DeviceConfigService;
@@ -9,6 +10,7 @@ import io.github.asmitmans.iotbackend.service.DeviceService;
 import jakarta.validation.Valid;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,13 +27,37 @@ public class DeviceController {
     private final DeviceConfigService deviceConfigService;
     private final DeviceCommandService deviceCommandService;
     private final CacheManager cacheManager;
+    private final CompanyResolver companyResolver;
 
     public DeviceController(DeviceService deviceService,
-                            DeviceConfigService deviceConfigService, DeviceCommandService deviceCommandService, CacheManager cacheManager) {
+                            DeviceConfigService deviceConfigService, DeviceCommandService deviceCommandService, CacheManager cacheManager, CompanyResolver companyResolver
+    ) {
         this.deviceService = deviceService;
         this.deviceConfigService = deviceConfigService;
         this.deviceCommandService = deviceCommandService;
         this.cacheManager = cacheManager;
+        this.companyResolver = companyResolver;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Page<DeviceListResponse>> getAll(
+            @RequestParam(required = false) Long companyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long effectiveCompanyId = companyResolver.resolveCompanyId(principal, companyId);
+        return ResponseEntity.ok(deviceService.getAll(effectiveCompanyId, page, size));
+    }
+
+    @GetMapping("/{deviceId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<DeviceDetailResponse> getById(
+            @PathVariable Long deviceId,
+            @RequestParam(required = false) Long companyId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long effectiveCompanyId = companyResolver.resolveCompanyId(principal, companyId);
+        return ResponseEntity.ok(deviceService.getById(deviceId, effectiveCompanyId));
     }
 
     @PostMapping
