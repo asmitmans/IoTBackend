@@ -1,8 +1,6 @@
 package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -18,10 +16,6 @@ public class DeviceModel extends AuditableEntity {
 
     @Column(nullable = false, unique = true, length = 100)
     private String name;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "config_schema", columnDefinition = "jsonb")
-    private String configSchema;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -55,14 +49,6 @@ public class DeviceModel extends AuditableEntity {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getConfigSchema() {
-        return configSchema;
-    }
-
-    public void setConfigSchema(String configSchema) {
-        this.configSchema = configSchema;
     }
 
     public Set<MeasurementType> getMeasurementTypes() {
