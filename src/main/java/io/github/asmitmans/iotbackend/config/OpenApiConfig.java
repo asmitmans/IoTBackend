@@ -16,14 +16,21 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                               .title("IoT Backend API")
-                              .version("0.2.0")
-                              .description("Core API — Auth + JWT"))
+                              .version("0.3.0")
+                              .description("Core API — Auth + JWT + Device API Key"))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                .components(new Components().addSecuritySchemes("bearerAuth",
-                                                                new SecurityScheme()
-                                                                        .name("bearerAuth")
-                                                                        .type(SecurityScheme.Type.HTTP)
-                                                                        .scheme("bearer")
-                                                                        .bearerFormat("JWT")));
+                .components(new Components()
+                                    .addSecuritySchemes("bearerAuth",
+                                                        new SecurityScheme()
+                                                                .name("bearerAuth")
+                                                                .type(SecurityScheme.Type.HTTP)
+                                                                .scheme("bearer")
+                                                                .bearerFormat("JWT"))
+                                    .addSecuritySchemes("ApiKey",
+                                                        new SecurityScheme()
+                                                                .name("Authorization")
+                                                                .type(SecurityScheme.Type.APIKEY)
+                                                                .in(SecurityScheme.In.HEADER)
+                                                                .description("Format: ApiKey iotdev_<key>")));
     }
 }
