@@ -1,11 +1,11 @@
 package io.github.asmitmans.iotbackend.service;
 
-import io.github.asmitmans.iotbackend.dto.request.LoginRequest;
-import io.github.asmitmans.iotbackend.dto.response.LoginResponse;
+import io.github.asmitmans.iotbackend.dto.auth.LoginRequest;
+import io.github.asmitmans.iotbackend.dto.auth.LoginResponse;
 import io.github.asmitmans.iotbackend.security.JwtService;
+import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +29,9 @@ public class AuthService {
                 )
         );
 
-        UserDetails user = userDetailsService.loadUserByUsername(request.username());
-        String token = jwtService.generateToken(user);
+        UserPrincipal principal = (UserPrincipal) userDetailsService.loadUserByUsername(request.username());
+        String token = jwtService.generateToken(principal);
 
-        return new LoginResponse(token, user.getUsername());
+        return new LoginResponse(token, principal.getUsername());
     }
 }

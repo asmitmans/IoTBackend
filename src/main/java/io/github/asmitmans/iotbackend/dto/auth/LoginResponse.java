@@ -1,4 +1,4 @@
-package io.github.asmitmans.iotbackend.dto.response;
+package io.github.asmitmans.iotbackend.dto.auth;
 
 public record LoginResponse(
         String token,
