@@ -19,12 +19,12 @@ public interface MeasurementRepository extends JpaRepository<Measurement, Long> 
     Optional<Measurement> findLatestByDeviceId(@Param("deviceId") Long deviceId);
 
     @Query("SELECT m FROM Measurement m WHERE m.device.id = :deviceId " +
-            "AND m.companyId = :companyId " +
+            "AND m.accountId = :accountId " +
             "AND m.recordedAt BETWEEN :from AND :to " +
             "ORDER BY m.recordedAt DESC")
     Page<Measurement> findByDeviceIdAndTimeRange(
             @Param("deviceId") Long deviceId,
-            @Param("companyId") Long companyId,
+            @Param("accountId") Long accountId,
             @Param("from")Instant from,
             @Param("to") Instant to,
             Pageable pageable);

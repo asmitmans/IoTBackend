@@ -8,10 +8,10 @@ import java.util.Optional;
 
 public interface LocationRepository extends JpaRepository<Location, Long> {
 
-    List<Location> findByCompanyId(Long companyId);
+    List<Location> findByAccountId(Long accountId);
 
-    Optional<Location> findByIdAndCompanyId(Long id, Long companyId);
+    Optional<Location> findByIdAndAccountId(Long id, Long accountId);
 
-    boolean existsByCompanyIdAndParentIdAndName(Long companyId, Long parentId, String name);
+    boolean existsByAccountIdAndParentIdAndName(Long accountId, Long parentId, String name);
 
 }

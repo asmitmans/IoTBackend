@@ -1,7 +1,7 @@
 package io.github.asmitmans.iotbackend.controller;
 
 import io.github.asmitmans.iotbackend.dto.measurement.MeasurementResponse;
-import io.github.asmitmans.iotbackend.security.CompanyResolver;
+import io.github.asmitmans.iotbackend.security.AccountResolver;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import io.github.asmitmans.iotbackend.service.MeasurementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,11 +25,11 @@ import java.util.List;
 public class MeasurementController {
 
     private final MeasurementService measurementService;
-    private final CompanyResolver companyResolver;
+    private final AccountResolver accountResolver;
 
-    public MeasurementController(MeasurementService measurementService, CompanyResolver companyResolver) {
+    public MeasurementController(MeasurementService measurementService, AccountResolver accountResolver) {
         this.measurementService = measurementService;
-        this.companyResolver = companyResolver;
+        this.accountResolver = accountResolver;
     }
 
     @Operation(summary = "Get latest measurement per device",
@@ -38,10 +38,10 @@ public class MeasurementController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<MeasurementResponse>> getLatest(
             @RequestParam(required = false) List<Long> deviceIds,
-            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) Long accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        Long effectiveCompanyId = companyResolver.resolveCompanyId(principal, companyId);
-        return ResponseEntity.ok(measurementService.getLatest(deviceIds, effectiveCompanyId));
+        Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
+        return ResponseEntity.ok(measurementService.getLatest(deviceIds, effectiveAccountId));
     }
 
     @Operation(summary = "Query measurements by time range",
@@ -54,9 +54,9 @@ public class MeasurementController {
             @RequestParam Instant to,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) Long companyId,
+            @RequestParam(required = false) Long accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        Long effectiveCompanyId = companyResolver.resolveCompanyId(principal, companyId);
-        return ResponseEntity.ok(measurementService.getByTimeRange(deviceId, from, to, page, size, effectiveCompanyId));
+        Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
+        return ResponseEntity.ok(measurementService.getByTimeRange(deviceId, from, to, page, size, effectiveAccountId));
     }
 }

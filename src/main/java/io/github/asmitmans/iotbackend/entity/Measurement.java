@@ -19,8 +19,8 @@ public class Measurement {
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @Column(name = "company_id", nullable = false)
-    private Long companyId;
+    @Column(name = "account_id", nullable = false)
+    private Long accountId;
 
     @Column(name = "recorded_at", nullable = false)
     private Instant recordedAt;
@@ -59,12 +59,12 @@ public class Measurement {
         this.device = device;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    public Long getAccountId() {
+        return accountId;
     }
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public Instant getRecordedAt() {

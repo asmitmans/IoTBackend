@@ -1,7 +1,7 @@
 package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
-import java.time.Instant;
+
 import java.util.Objects;
 
 @Entity
@@ -13,8 +13,8 @@ public class Location extends AuditableEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -26,8 +26,8 @@ public class Location extends AuditableEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Company getCompany() { return company; }
-    public void setCompany(Company company) { this.company = company; }
+    public Account getAccount() { return account; }
+    public void setAccount(Account account) { this.account = account; }
 
     public Location getParent() { return parent; }
     public void setParent(Location parent) { this.parent = parent; }

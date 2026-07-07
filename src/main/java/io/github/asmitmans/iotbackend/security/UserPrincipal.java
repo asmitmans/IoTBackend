@@ -10,19 +10,19 @@ public class UserPrincipal implements UserDetails {
     private final String username;
     private final String password;
     private final boolean enabled;
-    private final Long companyId;
+    private final Long accountId;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(String username, String password, boolean enabled, Long companyId, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrincipal(String username, String password, boolean enabled, Long accountId, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
-        this.companyId = companyId;
+        this.accountId = accountId;
         this.authorities = authorities;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    public Long getAccountId() {
+        return accountId;
     }
 
     @Override public String getUsername() {

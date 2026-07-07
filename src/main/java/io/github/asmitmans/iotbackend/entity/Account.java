@@ -5,14 +5,14 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "company")
-public class Company extends AuditableEntity {
+@Table(name = "account")
+public class Account extends AuditableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "company_name", nullable = false, length = 100)
+    @Column(name = "account_name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "api_key_hash", nullable = false, length = 255)
@@ -21,10 +21,10 @@ public class Company extends AuditableEntity {
     @Column(name = "api_key_prefix", nullable = false, length = 10)
     private String apiKeyPrefix;
 
-    public Company() {
+    public Account() {
     }
 
-    public Company(String name, String apiKeyHash, String apiKeyPrefix) {
+    public Account(String name, String apiKeyHash, String apiKeyPrefix) {
         this.name = name;
         this.apiKeyHash = apiKeyHash;
         this.apiKeyPrefix = apiKeyPrefix;
@@ -68,8 +68,8 @@ public class Company extends AuditableEntity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        Company company = (Company) o;
-        return Objects.equals(id, company.id);
+        Account account = (Account) o;
+        return Objects.equals(id, account.id);
     }
 
     @Override

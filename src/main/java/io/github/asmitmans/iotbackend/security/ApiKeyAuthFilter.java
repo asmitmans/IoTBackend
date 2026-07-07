@@ -1,6 +1,6 @@
 package io.github.asmitmans.iotbackend.security;
 
-import io.github.asmitmans.iotbackend.repository.CompanyRepository;
+import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import io.github.asmitmans.iotbackend.service.ApiKeyService;
 import jakarta.servlet.FilterChain;
@@ -21,16 +21,16 @@ import java.util.List;
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
     private final DeviceRepository deviceRepository;
-    private final CompanyRepository companyRepository;
+    private final AccountRepository accountRepository;
     private final ApiKeyService apiKeyService;
     private final CacheManager cacheManager;
 
     public ApiKeyAuthFilter(DeviceRepository deviceRepository,
-                            CompanyRepository companyRepository,
+                            AccountRepository accountRepository,
                             ApiKeyService apiKeyService,
                             CacheManager cacheManager) {
         this.deviceRepository = deviceRepository;
-        this.companyRepository = companyRepository;
+        this.accountRepository = accountRepository;
         this.apiKeyService = apiKeyService;
         this.cacheManager = cacheManager;
     }
@@ -52,8 +52,8 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
         if (apiKey.startsWith("iotdev_")) {
             authenticateDevice(apiKey);
-        } else if (apiKey.startsWith("iotcmp_")) {
-            authenticateCompany(apiKey);
+        } else if (apiKey.startsWith("iotacc_")) {
+            authenticateAccount(apiKey);
         }
 
         filterChain.doFilter(request, response);
@@ -79,22 +79,22 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
                         });
     }
 
-    private void authenticateCompany(String apiKey) {
-        Cache cache = cacheManager.getCache("companyAuth");
+    private void authenticateAccount(String apiKey) {
+        Cache cache = cacheManager.getCache("accountAuth");
         Cache.ValueWrapper cached = cache.get(apiKey);
 
         if (cached != null) {
-            setAuthentication(cached.get(), "ROLE_COMPANY");
+            setAuthentication(cached.get(), "ROLE_ACCOUNT");
             return;
         }
 
         String prefix = apiKeyService.extractPrefix(apiKey);
-        companyRepository.findByApiKeyPrefix(prefix).stream()
-                         .filter(c -> apiKeyService.verify(apiKey, c.getApiKeyHash()))
+        accountRepository.findByApiKeyPrefix(prefix).stream()
+                         .filter(a -> apiKeyService.verify(apiKey, a.getApiKeyHash()))
                          .findFirst()
-                         .ifPresent(c -> {
-                             cache.put(apiKey, c);
-                             setAuthentication(c, "ROLE_COMPANY");
+                         .ifPresent(a -> {
+                             cache.put(apiKey, a);
+                             setAuthentication(a, "ROLE_ACCOUNT");
                          });
     }
 

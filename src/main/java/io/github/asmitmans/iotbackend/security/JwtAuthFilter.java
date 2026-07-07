@@ -45,16 +45,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().getAuthentication() == null) {
 
             String username = jwtService.extractUsername(token);
-            Long companyId = jwtService.extractCompanyId(token);
+            Long accountId = jwtService.extractAccountId(token);
             String authoritiesStr = jwtService.extractAuthorities(token);
 
             List<SimpleGrantedAuthority> authorities =
                     Arrays.stream(authoritiesStr.split(","))
-                                                             .map(SimpleGrantedAuthority::new)
-                                                             .collect(Collectors.toList());
+                          .map(SimpleGrantedAuthority::new)
+                          .collect(Collectors.toList());
 
             UserPrincipal principal = new UserPrincipal(
-                    username, null, true, companyId, authorities);
+                    username, null, true, accountId, authorities);
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(

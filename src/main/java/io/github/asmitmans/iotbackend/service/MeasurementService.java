@@ -25,23 +25,23 @@ public class MeasurementService {
     }
 
     public List<MeasurementResponse> getLatest(List<Long> deviceIds,
-                                               Long companyId) {
-        List<Long> ids = resolveDeviceIds(deviceIds, companyId);
+                                               Long accountId) {
+        List<Long> ids = resolveDeviceIds(deviceIds, accountId);
         return ids.stream()
                   .map(id -> measurementRepository.findLatestByDeviceId(id))
-                .filter(opt -> opt.isPresent())
-                .map(opt -> toResponse(opt.get()))
-                .collect(Collectors.toList());
+                  .filter(opt -> opt.isPresent())
+                  .map(opt -> toResponse(opt.get()))
+                  .collect(Collectors.toList());
     }
 
-    private List<Long> resolveDeviceIds(List<Long> deviceIds, Long companyId) {
+    private List<Long> resolveDeviceIds(List<Long> deviceIds, Long accountId) {
         if (deviceIds != null && !deviceIds.isEmpty()) {
-            return deviceRepository.findByIdInAndCompanyId(deviceIds, companyId)
+            return deviceRepository.findByIdInAndAccountId(deviceIds, accountId)
                                    .stream()
                                    .map(d -> d.getId())
                                    .collect(Collectors.toList());
         }
-        return deviceRepository.findByCompanyId(companyId)
+        return deviceRepository.findByAccountId(accountId)
                                .stream()
                                .map(d -> d.getId())
                                .collect(Collectors.toList());
@@ -63,26 +63,13 @@ public class MeasurementService {
             Instant to,
             int page,
             int size,
-            Long companyId) {
+            Long accountId) {
 
         int safeSize = Math.min(size, 500);
         Pageable pageable = PageRequest.of(page, safeSize);
 
         return measurementRepository
-                .findByDeviceIdAndTimeRange(deviceId, companyId, from, to, pageable)
+                .findByDeviceIdAndTimeRange(deviceId, accountId, from, to, pageable)
                 .map(this::toResponse);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -13,8 +13,8 @@ public class Device extends AuditableEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
-    private Company company;
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "device_model_id", nullable = false)
@@ -65,8 +65,8 @@ public class Device extends AuditableEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Company getCompany() { return company; }
-    public void setCompany(Company company) { this.company = company; }
+    public Account getAccount() { return account; }
+    public void setAccount(Account account) { this.account = account; }
 
     public DeviceModel getDeviceModel() { return deviceModel; }
     public void setDeviceModel(DeviceModel deviceModel) { this.deviceModel = deviceModel; }

@@ -22,10 +22,10 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     @Query("SELECT d FROM Device d WHERE d.serialNumber = :serial")
     Optional<Device> findBySerialNumberForUpdate(@Param("serial") String serial);
 
-    List<Device> findByCompanyId(Long companyId);
-    List<Device> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+    List<Device> findByAccountId(Long accountId);
+    List<Device> findByIdInAndAccountId(List<Long> ids, Long accountId);
 
-    Page<Device> findByCompanyId(Long companyId, Pageable pageable);
+    Page<Device> findByAccountId(Long accountId, Pageable pageable);
 
-    Optional<Device> findByIdAndCompanyId(Long id, Long companyId);
+    Optional<Device> findByIdAndAccountId(Long id, Long accountId);
 }

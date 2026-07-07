@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class DeviceService {
@@ -43,12 +42,12 @@ public class DeviceService {
         } while (deviceRepository.findBySerialNumber(serialNumber).isPresent());
 
         DeviceModel model = deviceModelRepository.findById(request.getDeviceModelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
+                                                 .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
 
         Location location = null;
         if (request.getLocationId() != null) {
             location = locationRepository.findById(request.getLocationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+                                         .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
         }
 
         Device device = new Device();
@@ -80,14 +79,14 @@ public class DeviceService {
         }
 
         User user = userRepository.findByUsername(username)
-                              .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                                  .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Company company = user.getCompany();
-        if (company == null) {
-            throw new ConflictException("User has no associated company");
+        Account account = user.getAccount();
+        if (account == null) {
+            throw new ConflictException("User has no associated account");
         }
 
-        device.setCompany(company);
+        device.setAccount(account);
         device.setStatus("PENDING");
         device.setClaimExpiresAt(Instant.now().plusSeconds(300));
 
@@ -96,37 +95,37 @@ public class DeviceService {
 
     @Transactional
     public DeviceClaimResponse claim(String serialNumber) {
-    Device device =
-        deviceRepository
-            .findBySerialNumber(serialNumber)
-            .orElseThrow(() -> new ResourceNotFoundException("Device not " + "found"));
+        Device device =
+                deviceRepository
+                        .findBySerialNumber(serialNumber)
+                        .orElseThrow(() -> new ResourceNotFoundException("Device not " + "found"));
 
-    if (!device.getStatus().equals("PENDING")) {
-      throw new ConflictException("Device is not pending enrollment");
-    }
+        if (!device.getStatus().equals("PENDING")) {
+            throw new ConflictException("Device is not pending enrollment");
+        }
 
-    if (Instant.now().isAfter(device.getClaimExpiresAt())) {
-      device.setStatus("UNCLAIMED");
-      device.setCompany(null);
-      device.setClaimExpiresAt(null);
-      deviceRepository.save(device);
-      throw new ConflictException("Enrollment window expired");
-    }
+        if (Instant.now().isAfter(device.getClaimExpiresAt())) {
+            device.setStatus("UNCLAIMED");
+            device.setAccount(null);
+            device.setClaimExpiresAt(null);
+            deviceRepository.save(device);
+            throw new ConflictException("Enrollment window expired");
+        }
 
-    String apiKeyPlain = apiKeyService.generate();
+        String apiKeyPlain = apiKeyService.generate();
 
-    device.setApiKeyHash(apiKeyService.hash(apiKeyPlain));
-    device.setApiKeyPrefix(apiKeyService.extractPrefix(apiKeyPlain));
-    device.setClaimedAt(Instant.now());
-    device.setClaimExpiresAt(null);
-    device.setStatus("ACTIVE");
+        device.setApiKeyHash(apiKeyService.hash(apiKeyPlain));
+        device.setApiKeyPrefix(apiKeyService.extractPrefix(apiKeyPlain));
+        device.setClaimedAt(Instant.now());
+        device.setClaimExpiresAt(null);
+        device.setStatus("ACTIVE");
 
-    deviceRepository.save(device);
+        deviceRepository.save(device);
 
-    DeviceClaimResponse response = new DeviceClaimResponse();
-    response.setSerialNumber(device.getSerialNumber());
-    response.setStatus(device.getStatus());
-    response.setApiKeyPlain(apiKeyPlain);
+        DeviceClaimResponse response = new DeviceClaimResponse();
+        response.setSerialNumber(device.getSerialNumber());
+        response.setStatus(device.getStatus());
+        response.setApiKeyPlain(apiKeyPlain);
 
         return response;
     }
@@ -146,17 +145,17 @@ public class DeviceService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DeviceListResponse> getAll(Long companyId, int page, int size) {
+    public Page<DeviceListResponse> getAll(Long accountId, int page, int size) {
         int safeSize = Math.min(size, 500);
         Pageable pageable = PageRequest.of(page, safeSize);
 
-        return deviceRepository.findByCompanyId(companyId, pageable)
-                .map(this::toListResponse);
+        return deviceRepository.findByAccountId(accountId, pageable)
+                               .map(this::toListResponse);
     }
 
     @Transactional(readOnly = true)
-    public DeviceDetailResponse getById(Long deviceId, Long companyId) {
-        Device device = deviceRepository.findByIdAndCompanyId(deviceId, companyId)
+    public DeviceDetailResponse getById(Long deviceId, Long accountId) {
+        Device device = deviceRepository.findByIdAndAccountId(deviceId, accountId)
                                         .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
         return toDetailResponse(device);
     }

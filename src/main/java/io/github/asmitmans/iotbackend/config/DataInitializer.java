@@ -2,7 +2,7 @@ package io.github.asmitmans.iotbackend.config;
 
 import io.github.asmitmans.iotbackend.entity.Role;
 import io.github.asmitmans.iotbackend.entity.User;
-import io.github.asmitmans.iotbackend.repository.CompanyRepository;
+import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.RoleRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ public class DataInitializer implements ApplicationRunner {
 
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
-  private final CompanyRepository companyRepository;
+  private final AccountRepository accountRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Value("${seed.admin.password}")
@@ -31,18 +31,18 @@ public class DataInitializer implements ApplicationRunner {
 
   public DataInitializer(UserRepository userRepository,
                          RoleRepository roleRepository,
-                         CompanyRepository companyRepository,
+                         AccountRepository accountRepository,
                          PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
-    this.companyRepository = companyRepository;
+    this.accountRepository = accountRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
   @Override
   public void run(ApplicationArguments args) {
-      createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN");
-      createUserIfNotExists("user", userPassword, "ROLE_USER");
+    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN");
+    createUserIfNotExists("user", userPassword, "ROLE_USER");
   }
 
 
@@ -58,9 +58,9 @@ public class DataInitializer implements ApplicationRunner {
     user.setUsername(username);
     user.setPassword(passwordEncoder.encode(rawPassword));
     user.setEnabled(true);
-    user.setCompany(companyRepository.findAll().getFirst());
+    user.setAccount(accountRepository.findAll().getFirst());
     user.setRoles(Set.of(role));
 
     userRepository.save(user);
-    }
+  }
 }

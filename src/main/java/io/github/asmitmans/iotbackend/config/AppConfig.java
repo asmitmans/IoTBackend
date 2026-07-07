@@ -28,7 +28,7 @@ public class AppConfig {
 
     @Bean
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager manager = new CaffeineCacheManager("deviceAuth", "companyAuth");
+        CaffeineCacheManager manager = new CaffeineCacheManager("deviceAuth", "accountAuth");
         manager.setCaffeine(caffeine);
         return manager;
     }

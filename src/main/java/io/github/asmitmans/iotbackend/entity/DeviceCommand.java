@@ -19,8 +19,8 @@ public class DeviceCommand extends AuditableEntity {
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @Column(name = "company_id", nullable = false)
-    private Long companyId;
+    @Column(name = "account_id", nullable = false)
+    private Long accountId;
 
     @Column(nullable = false, length = 50)
     private String type;
@@ -62,12 +62,12 @@ public class DeviceCommand extends AuditableEntity {
         this.device = device;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    public Long getAccountId() {
+        return accountId;
     }
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public String getType() {

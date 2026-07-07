@@ -15,15 +15,15 @@ public class SecurityUtils {
         this.userRepository = userRepository;
     }
 
-    public Long getCompanyId(Authentication authentication) {
+    public Long getAccountId(Authentication authentication) {
         String username = authentication.getName();
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getCompany() == null) {
-            throw new ResourceNotFoundException("User has no associated company");
+        if (user.getAccount() == null) {
+            throw new ResourceNotFoundException("User has no associated account");
         }
-        return user.getCompany().getId().longValue();
+        return user.getAccount().getId().longValue();
     }
 }

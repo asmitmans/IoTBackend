@@ -2,11 +2,11 @@ package io.github.asmitmans.iotbackend.service;
 
 import io.github.asmitmans.iotbackend.dto.location.LocationRequest;
 import io.github.asmitmans.iotbackend.dto.location.LocationResponse;
-import io.github.asmitmans.iotbackend.entity.Company;
+import io.github.asmitmans.iotbackend.entity.Account;
 import io.github.asmitmans.iotbackend.entity.Location;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
-import io.github.asmitmans.iotbackend.repository.CompanyRepository;
+import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.LocationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,45 +18,45 @@ import java.util.stream.Collectors;
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final CompanyRepository companyRepository;
+    private final AccountRepository accountRepository;
 
-    public LocationService(LocationRepository locationRepository, CompanyRepository companyRepository) {
+    public LocationService(LocationRepository locationRepository, AccountRepository accountRepository) {
         this.locationRepository = locationRepository;
-        this.companyRepository = companyRepository;
+        this.accountRepository = accountRepository;
     }
 
     @Transactional(readOnly = true)
-    public List<LocationResponse> getAll(Long companyId) {
-        return locationRepository.findByCompanyId(companyId)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public List<LocationResponse> getAll(Long accountId) {
+        return locationRepository.findByAccountId(accountId)
+                                 .stream()
+                                 .map(this::toResponse)
+                                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public LocationResponse getById(Long id, Long companyId) {
-        return toResponse(findOrThrow(id, companyId));
+    public LocationResponse getById(Long id, Long accountId) {
+        return toResponse(findOrThrow(id, accountId));
     }
 
     @Transactional
-    public LocationResponse create(LocationRequest request, Long companyId) {
+    public LocationResponse create(LocationRequest request, Long accountId) {
         Long parentId = request.getParentId();
 
-        if (locationRepository.existsByCompanyIdAndParentIdAndName(companyId, parentId, request.getName())) {
+        if (locationRepository.existsByAccountIdAndParentIdAndName(accountId, parentId, request.getName())) {
             throw new ConflictException("Location with name '" + request.getName() +
-                    "' already exists at this level");
+                                                "' already exists at this level");
         }
 
-        Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        Account account = accountRepository.findById(accountId)
+                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         Location parent = null;
         if (parentId != null) {
-            parent = findOrThrow(parentId, companyId);
+            parent = findOrThrow(parentId, accountId);
         }
 
         Location entity = new Location();
-        entity.setCompany(company);
+        entity.setAccount(account);
         entity.setParent(parent);
         entity.setName(request.getName());
 
@@ -64,12 +64,12 @@ public class LocationService {
     }
 
     @Transactional
-    public LocationResponse update(Long id, LocationRequest request, Long companyId) {
-        Location entity = findOrThrow(id, companyId);
+    public LocationResponse update(Long id, LocationRequest request, Long accountId) {
+        Location entity = findOrThrow(id, accountId);
 
         Location parent = null;
         if (request.getParentId() != null) {
-            parent = findOrThrow(request.getParentId(), companyId);
+            parent = findOrThrow(request.getParentId(), accountId);
         }
 
         entity.setParent(parent);
@@ -79,14 +79,14 @@ public class LocationService {
     }
 
     @Transactional
-    public void delete(Long id, Long companyId) {
-        Location entity = findOrThrow(id, companyId);
+    public void delete(Long id, Long accountId) {
+        Location entity = findOrThrow(id, accountId);
         locationRepository.delete(entity);
     }
 
-    private Location findOrThrow(Long id, Long companyId) {
-        return locationRepository.findByIdAndCompanyId(id, companyId)
-                .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+    private Location findOrThrow(Long id, Long accountId) {
+        return locationRepository.findByIdAndAccountId(id, accountId)
+                                 .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
     }
 
     private LocationResponse toResponse(Location entity) {

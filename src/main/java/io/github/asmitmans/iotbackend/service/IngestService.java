@@ -32,7 +32,7 @@ public class IngestService {
 
         Measurement measurement = new Measurement();
         measurement.setDevice(device);
-        measurement.setCompanyId(device.getCompany().getId().longValue());
+        measurement.setAccountId(device.getAccount().getId().longValue());
         measurement.setRecordedAt(request.getRecordedAt());
         measurement.setPayload(request.getPayload());
         measurement.setSequenceNumber(request.getSequenceNumber());

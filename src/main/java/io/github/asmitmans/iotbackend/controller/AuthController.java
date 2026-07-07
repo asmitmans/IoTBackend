@@ -4,6 +4,7 @@ import io.github.asmitmans.iotbackend.dto.auth.LoginRequest;
 import io.github.asmitmans.iotbackend.dto.auth.LoginResponse;
 import io.github.asmitmans.iotbackend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

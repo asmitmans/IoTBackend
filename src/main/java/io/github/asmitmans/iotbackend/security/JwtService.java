@@ -30,7 +30,7 @@ public class JwtService {
 
         return Jwts.builder()
                    .subject(principal.getUsername())
-                   .claim("companyId", principal.getCompanyId())
+                   .claim("accountId", principal.getAccountId())
                    .claim("authorities", authorities)
                    .issuedAt(new Date(now))
                    .expiration(new Date(now + props.expirationMs()))
@@ -42,8 +42,8 @@ public class JwtService {
         return parseClaims(token).getSubject();
     }
 
-    public Long extractCompanyId(String token) {
-        return parseClaims(token).get("companyId", Long.class);
+    public Long extractAccountId(String token) {
+        return parseClaims(token).get("accountId", Long.class);
     }
 
     public String extractAuthorities(String token) {

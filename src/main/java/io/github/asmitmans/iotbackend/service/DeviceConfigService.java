@@ -74,11 +74,11 @@ public class DeviceConfigService {
 
     // PUT /config -> admin set desired values
     @Transactional
-    public void setDesiredConfig(Long deviceId, AdminConfigRequest request, Long companyId) {
+    public void setDesiredConfig(Long deviceId, AdminConfigRequest request, Long accountId) {
         Device device = deviceRepository.findById(deviceId)
-                                        .filter(d -> companyId == null ||
-                                                (d.getCompany() != null &&
-                                                        d.getCompany().getId().longValue() == companyId))
+                                        .filter(d -> accountId == null ||
+                                                (d.getAccount() != null &&
+                                                        d.getAccount().getId().longValue() == accountId))
                                         .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         request.getDesired().forEach((key, value) -> {

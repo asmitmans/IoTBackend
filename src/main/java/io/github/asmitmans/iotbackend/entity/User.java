@@ -33,8 +33,8 @@ public class User extends AuditableEntity {
     private String surnames;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
-    private Company company;
+    @JoinColumn(name = "account_id")
+    private Account account;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -48,14 +48,15 @@ public class User extends AuditableEntity {
     }
 
     public User(String username, String password, boolean enabled,
-                String alias, String names, String surnames, Company company) {
+                String alias, String names, String surnames, Account account
+    ) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
         this.alias = alias;
         this.names = names;
         this.surnames = surnames;
-        this.company = company;
+        this.account = account;
     }
 
     public Integer getId() {
@@ -114,12 +115,12 @@ public class User extends AuditableEntity {
         this.surnames = surnames;
     }
 
-    public Company getCompany() {
-        return company;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setCompany(Company company) {
-        this.company = company;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Set<Role> getRoles() {
