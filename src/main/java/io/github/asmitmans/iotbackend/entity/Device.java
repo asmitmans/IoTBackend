@@ -6,7 +6,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "device")
-public class Device extends AuditableEntity {
+public class Device extends PubliclyIdentifiableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

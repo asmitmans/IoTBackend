@@ -21,6 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @Tag(name = "Devices", description = "Device lifecycle, config, state and command management")
 @RestController
 @RequestMapping("/api/v1/devices")
@@ -49,7 +51,7 @@ public class DeviceController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<DeviceListResponse>> getAll(
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal UserPrincipal principal) {
@@ -62,7 +64,7 @@ public class DeviceController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<DeviceDetailResponse> getById(
             @PathVariable Long deviceId,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
         return ResponseEntity.ok(deviceService.getById(deviceId, effectiveAccountId));
@@ -109,12 +111,13 @@ public class DeviceController {
             @PathVariable Long deviceId,
             @RequestBody @Valid AdminConfigRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
-        if (!principal.getAuthorities().stream()
-                      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
-                && principal.getAccountId() == null) {
+        boolean isAdmin = principal.getAuthorities().stream()
+                                   .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Long accountId = accountResolver.resolveOwnAccountIdOrNull(principal);
+        if (!isAdmin && accountId == null) {
             throw new AccessDeniedException("User has no associated account");
         }
-        deviceConfigService.setDesiredConfig(deviceId, request, principal.getAccountId());
+        deviceConfigService.setDesiredConfig(deviceId, request, accountId);
         return ResponseEntity.ok().build();
     }
 
@@ -137,12 +140,13 @@ public class DeviceController {
             @PathVariable Long deviceId,
             @RequestBody @Valid CreateCommandRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
-        if (!principal.getAuthorities().stream()
-                      .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))
-                && principal.getAccountId() == null) {
+        boolean isAdmin = principal.getAuthorities().stream()
+                                   .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Long accountId = accountResolver.resolveOwnAccountIdOrNull(principal);
+        if (!isAdmin && accountId == null) {
             throw new AccessDeniedException("User has no associated account");
         }
-        deviceCommandService.createCommand(deviceId, request, principal.getAccountId());
+        deviceCommandService.createCommand(deviceId, request, accountId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "Locations", description = "Hierarchical location management per account")
 @RestController
@@ -34,7 +35,7 @@ public class LocationController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<LocationResponse>> getAll(
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(locationService.getAll(accountResolver.resolveAccountId(principal, accountId)));
     }
@@ -44,7 +45,7 @@ public class LocationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<LocationResponse> getById(
             @PathVariable Long id,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(locationService.getById(id, accountResolver.resolveAccountId(principal, accountId)));
     }
@@ -54,7 +55,7 @@ public class LocationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<LocationResponse> create(
             @RequestBody @Valid LocationRequest request,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(locationService.create(request, accountResolver.resolveAccountId(principal, accountId)));
@@ -66,7 +67,7 @@ public class LocationController {
     public ResponseEntity<LocationResponse> update(
             @PathVariable Long id,
             @RequestBody @Valid LocationRequest request,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(locationService.update(id, request, accountResolver.resolveAccountId(principal, accountId)));
     }
@@ -76,7 +77,7 @@ public class LocationController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         locationService.delete(id, accountResolver.resolveAccountId(principal, accountId));
         return ResponseEntity.noContent().build();

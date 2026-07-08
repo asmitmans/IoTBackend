@@ -12,11 +12,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, Long> {
     List<Device> findByApiKeyPrefix(String apiKeyPrefix);
     Optional<Device> findBySerialNumber(String serialNumber);
+    Optional<Device> findByPublicId(UUID publicId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT d FROM Device d WHERE d.serialNumber = :serial")

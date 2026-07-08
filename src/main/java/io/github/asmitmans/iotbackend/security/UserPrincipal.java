@@ -4,16 +4,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public class UserPrincipal implements UserDetails {
 
     private final String username;
     private final String password;
     private final boolean enabled;
-    private final Long accountId;
+    private final UUID accountId;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(String username, String password, boolean enabled, Long accountId, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrincipal(String username, String password, boolean enabled, UUID accountId, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
@@ -21,7 +22,7 @@ public class UserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
-    public Long getAccountId() {
+    public UUID getAccountId() {
         return accountId;
     }
 

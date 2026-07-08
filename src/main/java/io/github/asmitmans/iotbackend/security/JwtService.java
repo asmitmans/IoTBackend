@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +31,8 @@ public class JwtService {
 
         return Jwts.builder()
                    .subject(principal.getUsername())
-                   .claim("accountId", principal.getAccountId())
+                   .claim("accountId", principal.getAccountId() != null
+                           ? principal.getAccountId().toString() : null)
                    .claim("authorities", authorities)
                    .issuedAt(new Date(now))
                    .expiration(new Date(now + props.expirationMs()))
@@ -42,8 +44,9 @@ public class JwtService {
         return parseClaims(token).getSubject();
     }
 
-    public Long extractAccountId(String token) {
-        return parseClaims(token).get("accountId", Long.class);
+    public UUID extractAccountId(String token) {
+        String value = parseClaims(token).get("accountId", String.class);
+        return value != null ? UUID.fromString(value) : null;
     }
 
     public String extractAuthorities(String token) {

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Tag(name = "Measurements", description = "Telemetry query endpoints")
 @RestController
@@ -38,7 +39,7 @@ public class MeasurementController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<List<MeasurementResponse>> getLatest(
             @RequestParam(required = false) List<Long> deviceIds,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
         return ResponseEntity.ok(measurementService.getLatest(deviceIds, effectiveAccountId));
@@ -54,7 +55,7 @@ public class MeasurementController {
             @RequestParam Instant to,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) Long accountId,
+            @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
         return ResponseEntity.ok(measurementService.getByTimeRange(deviceId, from, to, page, size, effectiveAccountId));
