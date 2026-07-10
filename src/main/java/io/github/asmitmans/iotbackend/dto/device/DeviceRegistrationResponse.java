@@ -1,8 +1,10 @@
 package io.github.asmitmans.iotbackend.dto.device;
 
+import java.util.UUID;
+
 public class DeviceRegistrationResponse {
 
-    private Long id;
+    private UUID publicId;
     private String serialNumber;
     private String name;
     private String status;
@@ -12,12 +14,12 @@ public class DeviceRegistrationResponse {
     public DeviceRegistrationResponse() {
     }
 
-    public Long getId() {
-        return id;
+    public UUID getPublicId() {
+        return publicId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPublicId(UUID publicId) {
+        this.publicId = publicId;
     }
 
     public String getSerialNumber() {

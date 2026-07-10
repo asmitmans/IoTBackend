@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DeviceService {
@@ -32,6 +33,18 @@ public class DeviceService {
         this.deviceModelRepository = deviceModelRepository;
         this.locationRepository = locationRepository;
         this.apiKeyService = apiKeyService;
+    }
+
+    /**
+     * Translates the externally-facing publicId into the internal id used
+     * by services/repositories. Mirrors AccountResolver's role, kept here
+     * since no admin/role branching is involved for device lookup.
+     */
+    @Transactional(readOnly = true)
+    public Long resolveDeviceId(UUID publicId) {
+        return deviceRepository.findByPublicId(publicId)
+                               .map(Device::getId)
+                               .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
     }
 
     public DeviceRegistrationResponse register(DeviceRegistrationRequest request) {
@@ -60,7 +73,7 @@ public class DeviceService {
         device = deviceRepository.save(device);
 
         DeviceRegistrationResponse response = new DeviceRegistrationResponse();
-        response.setId(device.getId());
+        response.setPublicId(device.getPublicId());
         response.setSerialNumber(device.getSerialNumber());
         response.setName(device.getName());
         response.setStatus(device.getStatus());
@@ -163,7 +176,7 @@ public class DeviceService {
 
     private DeviceListResponse toListResponse(Device d) {
         DeviceListResponse r = new DeviceListResponse();
-        r.setId(d.getId());
+        r.setPublicId(d.getPublicId());
         r.setSerialNumber(d.getSerialNumber());
         r.setName(d.getName());
         r.setStatus(d.getStatus());
@@ -175,7 +188,7 @@ public class DeviceService {
 
     private DeviceDetailResponse toDetailResponse(Device d) {
         DeviceDetailResponse r = new DeviceDetailResponse();
-        r.setId(d.getId());
+        r.setPublicId(d.getPublicId());
         r.setSerialNumber(d.getSerialNumber());
         r.setName(d.getName());
         r.setStatus(d.getStatus());

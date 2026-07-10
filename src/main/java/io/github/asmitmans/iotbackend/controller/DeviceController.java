@@ -60,13 +60,14 @@ public class DeviceController {
     }
 
     @Operation(summary = "Get device detail", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping("/{deviceId}")
+    @GetMapping("/{devicePublicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<DeviceDetailResponse> getById(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
+        Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         return ResponseEntity.ok(deviceService.getById(deviceId, effectiveAccountId));
     }
 
@@ -95,20 +96,20 @@ public class DeviceController {
     }
 
     @Operation(summary = "Get device desired config", security = @SecurityRequirement(name = "ApiKey"))
-    @GetMapping("/{deviceId}/config")
+    @GetMapping("/{devicePublicId}/config")
     @PreAuthorize("hasRole('DEVICE')")
     public ResponseEntity<DeviceConfigResponse> getConfig(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             Authentication authentication) {
         Device device = (Device) authentication.getPrincipal();
         return ResponseEntity.ok(deviceConfigService.getConfig(device));
     }
 
     @Operation(summary = "Set device desired config", security = @SecurityRequirement(name = "bearerAuth"))
-    @PutMapping("/{deviceId}/config")
+    @PutMapping("/{devicePublicId}/config")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> setConfig(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             @RequestBody @Valid AdminConfigRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         boolean isAdmin = principal.getAuthorities().stream()
@@ -117,15 +118,16 @@ public class DeviceController {
         if (!isAdmin && accountId == null) {
             throw new AccessDeniedException("User has no associated account");
         }
+        Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceConfigService.setDesiredConfig(deviceId, request, accountId);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Report device state", security = @SecurityRequirement(name = "ApiKey"))
-    @PostMapping("/{deviceId}/state")
+    @PostMapping("/{devicePublicId}/state")
     @PreAuthorize("hasRole('DEVICE')")
     public ResponseEntity<Void> reportState(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             @RequestBody @Valid DeviceStateRequest request,
             Authentication authentication) {
         Device device = (Device) authentication.getPrincipal();
@@ -134,10 +136,10 @@ public class DeviceController {
     }
 
     @Operation(summary = "Create command for device", security = @SecurityRequirement(name = "bearerAuth"))
-    @PostMapping("/{deviceId}/commands")
+    @PostMapping("/{devicePublicId}/commands")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> createCommand(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             @RequestBody @Valid CreateCommandRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         boolean isAdmin = principal.getAuthorities().stream()
@@ -146,15 +148,16 @@ public class DeviceController {
         if (!isAdmin && accountId == null) {
             throw new AccessDeniedException("User has no associated account");
         }
+        Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceCommandService.createCommand(deviceId, request, accountId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "Get next pending command", security = @SecurityRequirement(name = "ApiKey"))
-    @GetMapping("/{deviceId}/commands/next")
+    @GetMapping("/{devicePublicId}/commands/next")
     @PreAuthorize("hasRole('DEVICE')")
     public ResponseEntity<DeviceCommandResponse> getNextCommand(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             Authentication authentication) {
         Device device = (Device) authentication.getPrincipal();
         return deviceCommandService.getNextCommand(device)
@@ -163,11 +166,12 @@ public class DeviceController {
     }
 
     @Operation(summary = "Update device status", security = @SecurityRequirement(name = "bearerAuth"))
-    @PatchMapping("/{deviceId}/status")
+    @PatchMapping("/{devicePublicId}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateStatus(
-            @PathVariable Long deviceId,
+            @PathVariable UUID devicePublicId,
             @RequestParam String status) {
+        Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceService.updateStatus(deviceId, status);
         cacheManager.getCache("deviceAuth").clear();
         return ResponseEntity.ok().build();
