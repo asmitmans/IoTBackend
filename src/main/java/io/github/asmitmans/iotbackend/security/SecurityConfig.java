@@ -37,6 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/devices/claim").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/users").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(apiKeyAuthFilter,UsernamePasswordAuthenticationFilter.class)
