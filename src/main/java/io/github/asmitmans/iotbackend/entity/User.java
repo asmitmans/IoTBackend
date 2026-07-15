@@ -44,7 +44,19 @@ public class User extends AuditableEntity {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_role", length = 20)
+    private AccountRole accountRole;
+
     public User() {
+    }
+
+    public AccountRole getAccountRole() {
+        return accountRole;
+    }
+
+    public void setAccountRole(AccountRole accountRole) {
+        this.accountRole = accountRole;
     }
 
     public User(String username, String password, boolean enabled,

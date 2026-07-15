@@ -1,5 +1,6 @@
 package io.github.asmitmans.iotbackend.config;
 
+import io.github.asmitmans.iotbackend.entity.AccountRole;
 import io.github.asmitmans.iotbackend.entity.Role;
 import io.github.asmitmans.iotbackend.entity.User;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
@@ -41,14 +42,15 @@ public class DataInitializer implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN");
-    createUserIfNotExists("user", userPassword, "ROLE_USER");
+    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN", AccountRole.OWNER);
+    createUserIfNotExists("user", userPassword, "ROLE_USER", AccountRole.MEMBER);
   }
 
 
   private void createUserIfNotExists(String username,
                                      String rawPassword,
-                                     String roleName) {
+                                     String roleName,
+                                     AccountRole accountRole) {
     if (userRepository.findByUsername(username).isPresent()) return;
 
     Role role = roleRepository.findByName(roleName)
@@ -59,6 +61,7 @@ public class DataInitializer implements ApplicationRunner {
     user.setPassword(passwordEncoder.encode(rawPassword));
     user.setEnabled(true);
     user.setAccount(accountRepository.findAll().getFirst());
+    user.setAccountRole(accountRole);
     user.setRoles(Set.of(role));
 
     userRepository.save(user);
