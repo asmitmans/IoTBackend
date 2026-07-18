@@ -2,6 +2,7 @@ package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -20,6 +21,12 @@ public class Account extends PubliclyIdentifiableEntity {
 
     @Column(name = "api_key_prefix", nullable = false, length = 10)
     private String apiKeyPrefix;
+
+    @Column(name = "join_code_hash", length = 255)
+    private String joinCodeHash;
+
+    @Column(name = "join_code_expires_at")
+    private Instant joinCodeExpiresAt;
 
     public Account() {
     }
@@ -60,6 +67,22 @@ public class Account extends PubliclyIdentifiableEntity {
 
     public void setApiKeyPrefix(String apiKeyPrefix) {
         this.apiKeyPrefix = apiKeyPrefix;
+    }
+
+    public String getJoinCodeHash() {
+        return joinCodeHash;
+    }
+
+    public void setJoinCodeHash(String joinCodeHash) {
+        this.joinCodeHash = joinCodeHash;
+    }
+
+    public Instant getJoinCodeExpiresAt() {
+        return joinCodeExpiresAt;
+    }
+
+    public void setJoinCodeExpiresAt(Instant joinCodeExpiresAt) {
+        this.joinCodeExpiresAt = joinCodeExpiresAt;
     }
 
     @Override
