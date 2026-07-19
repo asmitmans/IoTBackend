@@ -17,10 +17,10 @@ public class ApiKeyService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String generate() {
+    public String generate(String prefix) {
         byte[] bytes = new byte[KEY_BYTES];
         secureRandom.nextBytes(bytes);
-        return "iotdev_" + HexFormat.of().formatHex(bytes);
+        return prefix + HexFormat.of().formatHex(bytes);
     }
 
     public String extractPrefix(String apiKey) {

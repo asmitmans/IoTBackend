@@ -125,7 +125,7 @@ public class DeviceService {
             throw new ConflictException("Enrollment window expired");
         }
 
-        String apiKeyPlain = apiKeyService.generate();
+        String apiKeyPlain = apiKeyService.generate("iotdev_");
 
         device.setApiKeyHash(apiKeyService.hash(apiKeyPlain));
         device.setApiKeyPrefix(apiKeyService.extractPrefix(apiKeyPlain));
