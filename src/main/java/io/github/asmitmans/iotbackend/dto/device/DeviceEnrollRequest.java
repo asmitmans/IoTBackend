@@ -7,6 +7,9 @@ public class DeviceEnrollRequest {
     @NotBlank
     private String serialNumber;
 
+    @NotBlank
+    private String name;
+
     public DeviceEnrollRequest() {
     }
 
@@ -16,5 +19,13 @@ public class DeviceEnrollRequest {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

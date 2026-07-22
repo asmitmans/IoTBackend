@@ -85,7 +85,7 @@ public class DeviceController {
     public ResponseEntity<Void> enroll(
             @RequestBody @Valid DeviceEnrollRequest request,
             Authentication authentication) {
-        deviceService.enroll(request.getSerialNumber(), authentication.getName());
+        deviceService.enroll(request.getSerialNumber(), authentication.getName(), request.getName());
         return ResponseEntity.ok().build();
     }
 
