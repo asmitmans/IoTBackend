@@ -81,6 +81,7 @@ public class DeviceController {
 
     @Operation(summary = "Enroll device to account", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/enroll")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> enroll(
             @RequestBody @Valid DeviceEnrollRequest request,
             Authentication authentication) {
