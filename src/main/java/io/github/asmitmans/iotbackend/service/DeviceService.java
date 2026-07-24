@@ -77,17 +77,17 @@ public class DeviceService {
     }
 
     @Transactional
-    public void enroll(String serialNumber, String username, String name) {
+    public DeviceEnrollResponse enroll(String serialNumber, String username, String name) {
         Device device = deviceRepository.findBySerialNumberForUpdate(serialNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         if (!device.getStatus().equals("UNCLAIMED")) {
             throw new ConflictException("Device is not available for " +
-                    "enrollment");
+                                                "enrollment");
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                                  .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Account account = user.getAccount();
         if (account == null) {
@@ -100,6 +100,8 @@ public class DeviceService {
         device.setClaimExpiresAt(Instant.now().plusSeconds(300));
 
         deviceRepository.save(device);
+
+        return new DeviceEnrollResponse(device.getPublicId(), device.getSerialNumber(), device.getName(), device.getStatus());
     }
 
     @Transactional

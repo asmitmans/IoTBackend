@@ -82,11 +82,10 @@ public class DeviceController {
     @Operation(summary = "Enroll device to account", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/enroll")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Void> enroll(
+    public ResponseEntity<DeviceEnrollResponse> enroll(
             @RequestBody @Valid DeviceEnrollRequest request,
             Authentication authentication) {
-        deviceService.enroll(request.getSerialNumber(), authentication.getName(), request.getName());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(deviceService.enroll(request.getSerialNumber(), authentication.getName(), request.getName()));
     }
 
     @Operation(summary = "Claim device and obtain API key", description = "Public endpoint — no authentication required")
