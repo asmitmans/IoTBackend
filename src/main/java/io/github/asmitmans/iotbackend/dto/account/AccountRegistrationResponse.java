@@ -6,13 +6,15 @@ public class AccountRegistrationResponse {
 
     private UUID publicId;
     private String name;
+    private String token;
 
     public AccountRegistrationResponse() {
     }
 
-    public AccountRegistrationResponse(UUID publicId, String name) {
+    public AccountRegistrationResponse(UUID publicId, String name, String token) {
         this.publicId = publicId;
         this.name = name;
+        this.token = token;
     }
 
     public UUID getPublicId() {
@@ -29,5 +31,13 @@ public class AccountRegistrationResponse {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

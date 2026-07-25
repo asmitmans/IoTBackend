@@ -9,6 +9,9 @@ import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
+import io.github.asmitmans.iotbackend.security.JwtService;
+import io.github.asmitmans.iotbackend.security.UserPrincipal;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +21,19 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final ApiKeyService apiKeyService;
+    private final UserDetailsService userDetailsService;
+    private final JwtService jwtService;
 
-    public AccountService(AccountRepository accountRepository, UserRepository userRepository, ApiKeyService apiKeyService) {
+    public AccountService(AccountRepository accountRepository,
+                          UserRepository userRepository,
+                          ApiKeyService apiKeyService,
+                          UserDetailsService userDetailsService,
+                          JwtService jwtService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.apiKeyService = apiKeyService;
+        this.userDetailsService = userDetailsService;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -50,6 +61,9 @@ public class AccountService {
         user.setAccountRole(AccountRole.OWNER);
         userRepository.save(user);
 
-        return new AccountRegistrationResponse(account.getPublicId(), account.getName());
+        UserPrincipal refreshedPrincipal = (UserPrincipal) userDetailsService.loadUserByUsername(username);
+        String token = jwtService.generateToken(refreshedPrincipal);
+
+        return new AccountRegistrationResponse(account.getPublicId(), account.getName(), token);
     }
 }
