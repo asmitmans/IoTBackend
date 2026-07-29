@@ -1,8 +1,7 @@
 package io.github.asmitmans.iotbackend.config;
 
-import io.github.asmitmans.iotbackend.entity.AccountRole;
-import io.github.asmitmans.iotbackend.entity.Role;
-import io.github.asmitmans.iotbackend.entity.User;
+import io.github.asmitmans.iotbackend.entity.*;
+import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.RoleRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
@@ -22,6 +21,7 @@ public class DataInitializer implements ApplicationRunner {
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final AccountRepository accountRepository;
+  private final AccountMembershipRepository accountMembershipRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Value("${seed.admin.password}")
@@ -33,10 +33,12 @@ public class DataInitializer implements ApplicationRunner {
   public DataInitializer(UserRepository userRepository,
                          RoleRepository roleRepository,
                          AccountRepository accountRepository,
+                         AccountMembershipRepository accountMembershipRepository,
                          PasswordEncoder passwordEncoder) {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.accountRepository = accountRepository;
+    this.accountMembershipRepository = accountMembershipRepository;
     this.passwordEncoder = passwordEncoder;
   }
 
@@ -54,16 +56,20 @@ public class DataInitializer implements ApplicationRunner {
     if (userRepository.findByUsername(username).isPresent()) return;
 
     Role role = roleRepository.findByName(roleName)
-                              .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
+            .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
+
+    Account account = accountRepository.findAll().getFirst();
 
     User user = new User();
     user.setUsername(username);
     user.setPassword(passwordEncoder.encode(rawPassword));
     user.setEnabled(true);
-    user.setAccount(accountRepository.findAll().getFirst());
+    user.setAccount(account);
     user.setAccountRole(accountRole);
     user.setRoles(Set.of(role));
 
-    userRepository.save(user);
+    user = userRepository.save(user);
+
+    accountMembershipRepository.save(new AccountMembership(user, account, accountRole));
   }
 }
