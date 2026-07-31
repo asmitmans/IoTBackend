@@ -1,6 +1,7 @@
 package io.github.asmitmans.iotbackend.repository;
 
 import io.github.asmitmans.iotbackend.entity.AccountMembership;
+import io.github.asmitmans.iotbackend.entity.AccountRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,6 @@ public interface AccountMembershipRepository extends JpaRepository<AccountMember
     Optional<AccountMembership> findByUserIdAndAccountId(Integer userId, Long accountId);
 
     boolean existsByUserIdAndAccountId(Integer userId, Long accountId);
+
+    long countByAccountIdAndAccountRole(Long accountId, AccountRole accountRole);
 }

@@ -25,6 +25,9 @@ public class Account extends PubliclyIdentifiableEntity {
     @Column(name = "join_code_hash", length = 255)
     private String joinCodeHash;
 
+    @Column(name = "join_code_prefix", length = 10)
+    private String joinCodePrefix;
+
     @Column(name = "join_code_expires_at")
     private Instant joinCodeExpiresAt;
 
@@ -76,6 +79,10 @@ public class Account extends PubliclyIdentifiableEntity {
     public void setJoinCodeHash(String joinCodeHash) {
         this.joinCodeHash = joinCodeHash;
     }
+
+    public String getJoinCodePrefix() { return joinCodePrefix; }
+
+    public void setJoinCodePrefix(String joinCodePrefix) { this.joinCodePrefix = joinCodePrefix; }
 
     public Instant getJoinCodeExpiresAt() {
         return joinCodeExpiresAt;
