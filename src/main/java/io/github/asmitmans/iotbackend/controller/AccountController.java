@@ -1,8 +1,6 @@
 package io.github.asmitmans.iotbackend.controller;
 
-import io.github.asmitmans.iotbackend.dto.account.AccountMembershipResponse;
-import io.github.asmitmans.iotbackend.dto.account.AccountRegistrationRequest;
-import io.github.asmitmans.iotbackend.dto.account.AccountRegistrationResponse;
+import io.github.asmitmans.iotbackend.dto.account.*;
 import io.github.asmitmans.iotbackend.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -48,5 +46,21 @@ public class AccountController {
             @PathVariable UUID accountId,
             Authentication authentication) {
         return ResponseEntity.ok(accountService.switchAccount(authentication.getName(), accountId));
+    }
+
+    @Operation(summary = "Generate/rotate join code", description = "OWNER only. Returns the plaintext code once — not retrievable again. Valid 24h.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/{accountId}/join-code")
+    public ResponseEntity<JoinCodeResponse> generateJoinCode(
+            @PathVariable UUID accountId,
+            Authentication authentication) {
+        return ResponseEntity.ok(accountService.generateJoinCode(authentication.getName(), accountId));
+    }
+
+    @Operation(summary = "Join an account using its join code", description = "No accountId needed — the code alone identifies the account. Joiner is added as MEMBER.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/join")
+    public ResponseEntity<AccountRegistrationResponse> join(
+            @RequestBody @Valid AccountJoinRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(accountService.join(authentication.getName(), request.getJoinCode()));
     }
 }
