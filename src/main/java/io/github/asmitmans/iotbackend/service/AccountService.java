@@ -181,6 +181,91 @@ public class AccountService {
         return buildScopedResponse(user, account);
     }
 
+    @Transactional
+    public void leave(String username, UUID accountPublicId) {
+        User user = userRepository.findByUsername(username)
+                                  .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Account account = accountRepository.findByPublicId(accountPublicId)
+                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        AccountMembership membership = accountMembershipRepository.findByUserIdAndAccountId(user.getId(), account.getId())
+                                                                  .orElseThrow(() -> new ResourceNotFoundException("User is not a member of this account"));
+
+        if (membership.getAccountRole() == AccountRole.OWNER) {
+            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(account.getId(), AccountRole.OWNER);
+            if (ownerCount <= 1) {
+                throw new ConflictException("You are the only OWNER. Promote another member before leaving.");
+            }
+        }
+
+        accountMembershipRepository.delete(membership);
+    }
+
+    @Transactional
+    public void removeMember(String requesterUsername, UUID accountPublicId, String targetUsername) {
+        User requester = userRepository.findByUsername(requesterUsername)
+                                       .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Account account = accountRepository.findByPublicId(accountPublicId)
+                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        AccountMembership requesterMembership = accountMembershipRepository
+                .findByUserIdAndAccountId(requester.getId(), account.getId())
+                .orElseThrow(() -> new AccessDeniedException("User is not a member of this account"));
+
+        if (requesterMembership.getAccountRole() != AccountRole.OWNER) {
+            throw new AccessDeniedException("Only the account OWNER can remove members");
+        }
+
+        User target = userRepository.findByUsername(targetUsername)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Target user not found"));
+
+        AccountMembership targetMembership = accountMembershipRepository
+                .findByUserIdAndAccountId(target.getId(), account.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Target user is not a member of this account"));
+
+        if (targetMembership.getAccountRole() == AccountRole.OWNER) {
+            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(account.getId(), AccountRole.OWNER);
+            if (ownerCount <= 1) {
+                throw new ConflictException("Cannot remove the only OWNER of an account");
+            }
+        }
+
+        accountMembershipRepository.delete(targetMembership);
+    }
+
+    @Transactional
+    public void promote(String requesterUsername, UUID accountPublicId, String targetUsername) {
+        User requester = userRepository.findByUsername(requesterUsername)
+                                       .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Account account = accountRepository.findByPublicId(accountPublicId)
+                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+
+        AccountMembership requesterMembership = accountMembershipRepository
+                .findByUserIdAndAccountId(requester.getId(), account.getId())
+                .orElseThrow(() -> new AccessDeniedException("User is not a member of this account"));
+
+        if (requesterMembership.getAccountRole() != AccountRole.OWNER) {
+            throw new AccessDeniedException("Only the account OWNER can promote members");
+        }
+
+        User target = userRepository.findByUsername(targetUsername)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Target user not found"));
+
+        AccountMembership targetMembership = accountMembershipRepository
+                .findByUserIdAndAccountId(target.getId(), account.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Target user is not a member of this account"));
+
+        if (targetMembership.getAccountRole() == AccountRole.OWNER) {
+            throw new ConflictException("User is already an OWNER of this account");
+        }
+
+        targetMembership.setAccountRole(AccountRole.OWNER);
+        accountMembershipRepository.save(targetMembership);
+    }
+
     private AccountRegistrationResponse buildScopedResponse(User user, Account account) {
         UserPrincipal principal = new UserPrincipal(
                 user.getUsername(),

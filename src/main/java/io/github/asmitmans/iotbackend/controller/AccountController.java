@@ -63,4 +63,33 @@ public class AccountController {
             Authentication authentication) {
         return ResponseEntity.ok(accountService.join(authentication.getName(), request.getJoinCode()));
     }
+
+    @Operation(summary = "Leave an account", description = "Self-removal. Blocked if you are the only OWNER — promote another member first.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/{accountId}/leave")
+    public ResponseEntity<Void> leave(
+            @PathVariable UUID accountId,
+            Authentication authentication) {
+        accountService.leave(authentication.getName(), accountId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Remove a member from the account", description = "OWNER only. Cannot remove the only OWNER (prevents orphaned accounts).", security = @SecurityRequirement(name = "bearerAuth"))
+    @DeleteMapping("/{accountId}/members/{username}")
+    public ResponseEntity<Void> removeMember(
+            @PathVariable UUID accountId,
+            @PathVariable String username,
+            Authentication authentication) {
+        accountService.removeMember(authentication.getName(), accountId, username);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Promote a member to OWNER", description = "OWNER only.", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping("/{accountId}/members/{username}/promote")
+    public ResponseEntity<Void> promote(
+            @PathVariable UUID accountId,
+            @PathVariable String username,
+            Authentication authentication) {
+        accountService.promote(authentication.getName(), accountId, username);
+        return ResponseEntity.noContent().build();
+    }
 }
