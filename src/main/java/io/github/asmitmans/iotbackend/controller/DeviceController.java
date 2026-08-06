@@ -84,8 +84,11 @@ public class DeviceController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<DeviceEnrollResponse> enroll(
             @RequestBody @Valid DeviceEnrollRequest request,
-            Authentication authentication) {
-        return ResponseEntity.ok(deviceService.enroll(request.getSerialNumber(), authentication.getName(), request.getName()));
+            @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal.getAccountId() == null) {
+            throw new AccessDeniedException("User has no active account to enroll into");
+        }
+        return ResponseEntity.ok(deviceService.enroll(request.getSerialNumber(), principal.getAccountId(), request.getName()));
     }
 
     @Operation(summary = "Claim device and obtain API key", description = "Public endpoint — no authentication required")

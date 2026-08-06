@@ -20,16 +20,16 @@ import java.util.UUID;
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
-    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final DeviceModelRepository deviceModelRepository;
     private final LocationRepository locationRepository;
     private final ApiKeyService apiKeyService;
 
     private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    public DeviceService(DeviceRepository deviceRepository, UserRepository userRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService) {
+    public DeviceService(DeviceRepository deviceRepository, AccountRepository accountRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService) {
         this.deviceRepository = deviceRepository;
-        this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
         this.deviceModelRepository = deviceModelRepository;
         this.locationRepository = locationRepository;
         this.apiKeyService = apiKeyService;
@@ -38,8 +38,8 @@ public class DeviceService {
     @Transactional(readOnly = true)
     public Long resolveDeviceId(UUID publicId) {
         return deviceRepository.findByPublicId(publicId)
-                .map(Device::getId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                               .map(Device::getId)
+                               .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
     }
 
     public DeviceRegistrationResponse register(DeviceRegistrationRequest request) {
@@ -50,12 +50,12 @@ public class DeviceService {
         } while (deviceRepository.findBySerialNumber(serialNumber).isPresent());
 
         DeviceModel model = deviceModelRepository.findById(request.getDeviceModelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
+                                                 .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
 
         Location location = null;
         if (request.getLocationId() != null) {
             location = locationRepository.findById(request.getLocationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+                                         .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
         }
 
         Device device = new Device();
@@ -63,7 +63,6 @@ public class DeviceService {
         device.setDeviceModel(model);
         device.setLocation(location);
         device.setStatus("UNCLAIMED");
-        // name se define recién en enroll() por el dueño real, no en el registro de fábrica
 
         device = deviceRepository.save(device);
 
@@ -77,22 +76,16 @@ public class DeviceService {
     }
 
     @Transactional
-    public DeviceEnrollResponse enroll(String serialNumber, String username, String name) {
+    public DeviceEnrollResponse enroll(String serialNumber, UUID accountPublicId, String name) {
         Device device = deviceRepository.findBySerialNumberForUpdate(serialNumber)
                                         .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         if (!device.getStatus().equals("UNCLAIMED")) {
-            throw new ConflictException("Device is not available for " +
-                                                "enrollment");
+            throw new ConflictException("Device is not available for enrollment");
         }
 
-        User user = userRepository.findByUsername(username)
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Account account = user.getAccount();
-        if (account == null) {
-            throw new ConflictException("User has no associated account");
-        }
+        Account account = accountRepository.findByPublicId(accountPublicId)
+                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         device.setAccount(account);
         device.setName(name);
@@ -144,7 +137,7 @@ public class DeviceService {
     @Transactional
     public void updateStatus(Long deviceId, String newStatus) {
         Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         List<String> validStatuses = List.of("ACTIVE", "INACTIVE");
         if (!validStatuses.contains(newStatus)) {
@@ -161,13 +154,13 @@ public class DeviceService {
         Pageable pageable = PageRequest.of(page, safeSize);
 
         return deviceRepository.findByAccountId(accountId, pageable)
-                .map(this::toListResponse);
+                               .map(this::toListResponse);
     }
 
     @Transactional(readOnly = true)
     public DeviceDetailResponse getById(Long deviceId, Long accountId) {
         Device device = deviceRepository.findByIdAndAccountId(deviceId, accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
         return toDetailResponse(device);
     }
 

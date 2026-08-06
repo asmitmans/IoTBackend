@@ -64,10 +64,6 @@ public class AccountService {
         User user = userRepository.findByUsername(username)
                                   .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (user.getAccount() != null) {
-            throw new ConflictException("User already belongs to an account");
-        }
-
         String name = (request.getName() != null && !request.getName().isBlank())
                 ? request.getName()
                 : username + "'s Account";
@@ -79,10 +75,6 @@ public class AccountService {
                 apiKeyService.extractPrefix(apiKeyPlain)
         );
         account = accountRepository.save(account);
-
-        user.setAccount(account);
-        user.setAccountRole(AccountRole.OWNER);
-        userRepository.save(user);
 
         accountMembershipRepository.save(new AccountMembership(user, account, AccountRole.OWNER));
 
