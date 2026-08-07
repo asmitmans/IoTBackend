@@ -56,7 +56,7 @@ public class DataInitializer implements ApplicationRunner {
     if (userRepository.findByUsername(username).isPresent()) return;
 
     Role role = roleRepository.findByName(roleName)
-            .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
+                              .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
 
     Account account = accountRepository.findAll().getFirst();
 
@@ -64,8 +64,6 @@ public class DataInitializer implements ApplicationRunner {
     user.setUsername(username);
     user.setPassword(passwordEncoder.encode(rawPassword));
     user.setEnabled(true);
-    user.setAccount(account);
-    user.setAccountRole(accountRole);
     user.setRoles(Set.of(role));
 
     user = userRepository.save(user);
