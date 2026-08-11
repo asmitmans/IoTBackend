@@ -32,10 +32,6 @@ public class User extends AuditableEntity {
     @Column(name = "surnames", length = 100)
     private String surnames;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private Account account;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -44,31 +40,7 @@ public class User extends AuditableEntity {
     )
     private Set<Role> roles = new HashSet<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "account_role", length = 20)
-    private AccountRole accountRole;
-
     public User() {
-    }
-
-    public AccountRole getAccountRole() {
-        return accountRole;
-    }
-
-    public void setAccountRole(AccountRole accountRole) {
-        this.accountRole = accountRole;
-    }
-
-    public User(String username, String password, boolean enabled,
-                String alias, String names, String surnames, Account account
-    ) {
-        this.username = username;
-        this.password = password;
-        this.enabled = enabled;
-        this.alias = alias;
-        this.names = names;
-        this.surnames = surnames;
-        this.account = account;
     }
 
     public Integer getId() {
@@ -125,14 +97,6 @@ public class User extends AuditableEntity {
 
     public void setSurnames(String surnames) {
         this.surnames = surnames;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
     }
 
     public Set<Role> getRoles() {

@@ -1,6 +1,10 @@
 package io.github.asmitmans.iotbackend.config;
 
-import io.github.asmitmans.iotbackend.entity.*;
+import io.github.asmitmans.iotbackend.entity.Account;
+import io.github.asmitmans.iotbackend.entity.AccountMembership;
+import io.github.asmitmans.iotbackend.entity.AccountRole;
+import io.github.asmitmans.iotbackend.entity.Role;
+import io.github.asmitmans.iotbackend.entity.User;
 import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.RoleRepository;
