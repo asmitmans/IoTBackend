@@ -48,6 +48,6 @@ public class AuthService {
         UserPrincipal principal = (UserPrincipal) userDetailsService.loadUserByUsername(request.username());
         String token = jwtService.generateToken(principal);
 
-        return new LoginResponse(token, principal.getUsername());
+        return new LoginResponse(token, principal.getUsername(), principal.getAccountId());
     }
 }
