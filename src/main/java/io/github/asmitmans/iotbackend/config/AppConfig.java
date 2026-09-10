@@ -21,14 +21,14 @@ public class AppConfig {
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
         return Caffeine.newBuilder()
-                       .maximumSize(10_000)
-                       .expireAfterWrite(24, TimeUnit.HOURS)
-                       .recordStats();
+                .maximumSize(10_000)
+                .expireAfterWrite(24, TimeUnit.HOURS)
+                .recordStats();
     }
 
     @Bean
     public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager manager = new CaffeineCacheManager("deviceAuth", "accountAuth");
+        CaffeineCacheManager manager = new CaffeineCacheManager("deviceAuth");
         manager.setCaffeine(caffeine);
         return manager;
     }

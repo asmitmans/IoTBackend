@@ -11,8 +11,6 @@ import java.util.UUID;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
-    Optional<Account> findByApiKeyHash(String apiKeyHash);
-    Optional<Account> findByApiKeyPrefix(String apiKeyPrefix);
     Optional<Account> findByPublicId(UUID publicId);
     List<Account> findByJoinCodePrefix(String joinCodePrefix);
 

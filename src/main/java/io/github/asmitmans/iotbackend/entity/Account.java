@@ -16,12 +16,6 @@ public class Account extends PubliclyIdentifiableEntity {
     @Column(name = "account_name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "api_key_hash", nullable = false, length = 255)
-    private String apiKeyHash;
-
-    @Column(name = "api_key_prefix", nullable = false, length = 10)
-    private String apiKeyPrefix;
-
     @Column(name = "join_code_hash", length = 255)
     private String joinCodeHash;
 
@@ -34,10 +28,8 @@ public class Account extends PubliclyIdentifiableEntity {
     public Account() {
     }
 
-    public Account(String name, String apiKeyHash, String apiKeyPrefix) {
+    public Account(String name) {
         this.name = name;
-        this.apiKeyHash = apiKeyHash;
-        this.apiKeyPrefix = apiKeyPrefix;
     }
 
     public Long getId() {
@@ -56,22 +48,6 @@ public class Account extends PubliclyIdentifiableEntity {
         this.name = name;
     }
 
-    public String getApiKeyHash() {
-        return apiKeyHash;
-    }
-
-    public void setApiKeyHash(String apiKeyHash) {
-        this.apiKeyHash = apiKeyHash;
-    }
-
-    public String getApiKeyPrefix() {
-        return apiKeyPrefix;
-    }
-
-    public void setApiKeyPrefix(String apiKeyPrefix) {
-        this.apiKeyPrefix = apiKeyPrefix;
-    }
-
     public String getJoinCodeHash() {
         return joinCodeHash;
     }
@@ -80,9 +56,13 @@ public class Account extends PubliclyIdentifiableEntity {
         this.joinCodeHash = joinCodeHash;
     }
 
-    public String getJoinCodePrefix() { return joinCodePrefix; }
+    public String getJoinCodePrefix() {
+        return joinCodePrefix;
+    }
 
-    public void setJoinCodePrefix(String joinCodePrefix) { this.joinCodePrefix = joinCodePrefix; }
+    public void setJoinCodePrefix(String joinCodePrefix) {
+        this.joinCodePrefix = joinCodePrefix;
+    }
 
     public Instant getJoinCodeExpiresAt() {
         return joinCodeExpiresAt;

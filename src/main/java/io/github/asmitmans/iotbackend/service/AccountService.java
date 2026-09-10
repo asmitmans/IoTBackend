@@ -62,18 +62,13 @@ public class AccountService {
     @Transactional
     public AccountRegistrationResponse create(String username, AccountRegistrationRequest request) {
         User user = userRepository.findByUsername(username)
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         String name = (request.getName() != null && !request.getName().isBlank())
                 ? request.getName()
                 : username + "'s Account";
 
-        String apiKeyPlain = apiKeyService.generate("iotacc_");
-        Account account = new Account(
-                name,
-                apiKeyService.hash(apiKeyPlain),
-                apiKeyService.extractPrefix(apiKeyPlain)
-        );
+        Account account = new Account(name);
         account = accountRepository.save(account);
 
         accountMembershipRepository.save(new AccountMembership(user, account, AccountRole.OWNER));

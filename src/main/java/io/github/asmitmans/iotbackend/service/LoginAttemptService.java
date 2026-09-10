@@ -1,4 +1,4 @@
-package io.github.asmitmans.iotbackend.security;
+package io.github.asmitmans.iotbackend.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Tracks failed login attempts per username to mitigate brute-force /
  * credential stuffing (OWASP API2:2023 - Broken Authentication).
  * Dedicated Caffeine instance, separate from the CacheManager beans used
- * for deviceAuth/accountAuth, since those share a 24h TTL unsuited for a
+ * for deviceAuth, since those share a 24h TTL unsuited for a
  * short lockout window and don't support atomic increments.
  */
 @Component

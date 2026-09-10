@@ -3,7 +3,7 @@ package io.github.asmitmans.iotbackend.service;
 import io.github.asmitmans.iotbackend.dto.auth.LoginRequest;
 import io.github.asmitmans.iotbackend.dto.auth.LoginResponse;
 import io.github.asmitmans.iotbackend.security.JwtService;
-import io.github.asmitmans.iotbackend.security.LoginAttemptService;
+import io.github.asmitmans.iotbackend.service.LoginAttemptService;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
