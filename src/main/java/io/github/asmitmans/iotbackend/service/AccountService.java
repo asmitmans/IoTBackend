@@ -19,9 +19,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,31 +26,25 @@ import java.util.stream.Collectors;
 @Service
 public class AccountService {
 
-    private static final String JOIN_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    private static final int JOIN_CODE_LENGTH = 8;
-    private static final int JOIN_CODE_PREFIX_LENGTH = 4;
-    private static final long JOIN_CODE_VALIDITY_HOURS = 24;
-
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final AccountMembershipRepository accountMembershipRepository;
-    private final ApiKeyService apiKeyService;
+    private final JoinCodeService joinCodeService;
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
     private final JoinAttemptService joinAttemptService;
-    private final SecureRandom secureRandom = new SecureRandom();
 
     public AccountService(AccountRepository accountRepository,
                           UserRepository userRepository,
                           AccountMembershipRepository accountMembershipRepository,
-                          ApiKeyService apiKeyService,
+                          JoinCodeService joinCodeService,
                           UserDetailsService userDetailsService,
                           JwtService jwtService,
                           JoinAttemptService joinAttemptService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
-        this.apiKeyService = apiKeyService;
+        this.joinCodeService = joinCodeService;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.joinAttemptService = joinAttemptService;
@@ -122,15 +113,14 @@ public class AccountService {
             throw new AccessDeniedException("Only the account OWNER can generate a join code");
         }
 
-        String plainCode = generateCode();
-        Instant expiresAt = Instant.now().plus(JOIN_CODE_VALIDITY_HOURS, ChronoUnit.HOURS);
+        JoinCodeIssuance issuance = joinCodeService.issue();
 
-        account.setJoinCodeHash(apiKeyService.hash(plainCode));
-        account.setJoinCodePrefix(plainCode.substring(0, JOIN_CODE_PREFIX_LENGTH));
-        account.setJoinCodeExpiresAt(expiresAt);
+        account.setJoinCodeHash(issuance.hash());
+        account.setJoinCodePrefix(issuance.prefix());
+        account.setJoinCodeExpiresAt(issuance.expiresAt());
         accountRepository.save(account);
 
-        return new JoinCodeResponse(plainCode, expiresAt);
+        return new JoinCodeResponse(issuance.plainCode(), issuance.expiresAt());
     }
 
     @Transactional
@@ -140,22 +130,12 @@ public class AccountService {
         User user = userRepository.findByUsername(username)
                                   .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        String prefix = joinCode.length() >= JOIN_CODE_PREFIX_LENGTH
-                ? joinCode.substring(0, JOIN_CODE_PREFIX_LENGTH)
-                : joinCode;
-
-        Account account = accountRepository.findByJoinCodePrefix(prefix).stream()
-                                           .filter(a -> a.getJoinCodeHash() != null)
-                                           .filter(a -> apiKeyService.verify(joinCode, a.getJoinCodeHash()))
-                                           .findFirst()
-                                           .orElseGet(() -> {
-                                               joinAttemptService.recordFailure(username);
-                                               throw new AccessDeniedException("Invalid join code");
-                                           });
-
-        if (Instant.now().isAfter(account.getJoinCodeExpiresAt())) {
+        Account account;
+        try {
+            account = joinCodeService.resolveAndVerify(joinCode);
+        } catch (AccessDeniedException | ConflictException e) {
             joinAttemptService.recordFailure(username);
-            throw new ConflictException("Join code has expired");
+            throw e;
         }
 
         if (accountMembershipRepository.existsByUserIdAndAccountId(user.getId(), account.getId())) {
@@ -267,13 +247,5 @@ public class AccountService {
         String token = jwtService.generateToken(principal);
 
         return new AccountRegistrationResponse(account.getPublicId(), account.getName(), token);
-    }
-
-    private String generateCode() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < JOIN_CODE_LENGTH; i++) {
-            sb.append(JOIN_CODE_ALPHABET.charAt(secureRandom.nextInt(JOIN_CODE_ALPHABET.length())));
-        }
-        return sb.toString();
     }
 }
