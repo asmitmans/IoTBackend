@@ -133,17 +133,11 @@ public class AccountService {
 
     @Transactional
     public void leave(String username, UUID accountPublicId) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Account account = accountRepository.findByPublicId(accountPublicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
-
-        AccountMembership membership = accountMembershipRepository.findByUserIdAndAccountId(user.getId(), account.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User is not a member of this account"));
+        MemberContext ctx = loadMemberContext(username, accountPublicId);
+        AccountMembership membership = ctx.membership();
 
         if (membership.getAccountRole() == AccountRole.OWNER) {
-            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(account.getId(), AccountRole.OWNER);
+            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(ctx.account().getId(), AccountRole.OWNER);
             if (ownerCount <= 1) {
                 throw new ConflictException("You are the only OWNER. Promote another member before leaving.");
             }
