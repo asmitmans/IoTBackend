@@ -14,7 +14,6 @@ import io.github.asmitmans.iotbackend.security.JoinAttemptService;
 import io.github.asmitmans.iotbackend.security.JwtService;
 import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +32,7 @@ public class AccountService {
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
     private final JoinAttemptService joinAttemptService;
+    private final ScopedTokenService scopedTokenService;
 
     public AccountService(AccountRepository accountRepository,
                           UserRepository userRepository,
@@ -40,7 +40,7 @@ public class AccountService {
                           JoinCodeService joinCodeService,
                           UserDetailsService userDetailsService,
                           JwtService jwtService,
-                          JoinAttemptService joinAttemptService) {
+                          JoinAttemptService joinAttemptService, ScopedTokenService scopedTokenService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
@@ -48,6 +48,7 @@ public class AccountService {
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.joinAttemptService = joinAttemptService;
+        this.scopedTokenService = scopedTokenService;
     }
 
     @Transactional
@@ -213,17 +214,7 @@ public class AccountService {
     }
 
     private AccountRegistrationResponse buildScopedResponse(User user, Account account) {
-        UserPrincipal principal = new UserPrincipal(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                account.getPublicId(),
-                user.getRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getName()))
-                        .collect(Collectors.toSet())
-        );
-
-        String token = jwtService.generateToken(principal);
+        String token = scopedTokenService.issue(user, account);
 
         return new AccountRegistrationResponse(account.getPublicId(), account.getName(), token);
     }
