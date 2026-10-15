@@ -1,6 +1,7 @@
 package io.github.asmitmans.iotbackend.controller;
 
 import io.github.asmitmans.iotbackend.dto.account.*;
+import io.github.asmitmans.iotbackend.service.AccountMembershipService;
 import io.github.asmitmans.iotbackend.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,9 +21,11 @@ import java.util.UUID;
 public class AccountController {
 
     private final AccountService accountService;
+    private final AccountMembershipService accountMembershipService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, AccountMembershipService accountMembershipService) {
         this.accountService = accountService;
+        this.accountMembershipService = accountMembershipService;
     }
 
     @Operation(summary = "Create a new account", description = "Authenticated user must not already belong to an account. Creator becomes OWNER.", security = @SecurityRequirement(name = "bearerAuth"))
@@ -31,7 +34,7 @@ public class AccountController {
             @RequestBody @Valid AccountRegistrationRequest request,
             Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(accountService.create(authentication.getName(), request));
+                .body(accountService.create(authentication.getName(), request));
     }
 
     @Operation(summary = "List my accounts", description = "Returns every account the authenticated user has a membership in, with their role in each.", security = @SecurityRequirement(name = "bearerAuth"))
@@ -45,7 +48,7 @@ public class AccountController {
     public ResponseEntity<AccountRegistrationResponse> switchAccount(
             @PathVariable UUID accountId,
             Authentication authentication) {
-        return ResponseEntity.ok(accountService.switchAccount(authentication.getName(), accountId));
+        return ResponseEntity.ok(accountMembershipService.switchAccount(authentication.getName(), accountId));
     }
 
     @Operation(summary = "Generate/rotate join code", description = "OWNER only. Returns the plaintext code once — not retrievable again. Valid 24h.", security = @SecurityRequirement(name = "bearerAuth"))
@@ -53,7 +56,7 @@ public class AccountController {
     public ResponseEntity<JoinCodeResponse> generateJoinCode(
             @PathVariable UUID accountId,
             Authentication authentication) {
-        return ResponseEntity.ok(accountService.generateJoinCode(authentication.getName(), accountId));
+        return ResponseEntity.ok(accountMembershipService.generateJoinCode(authentication.getName(), accountId));
     }
 
     @Operation(summary = "Join an account using its join code", description = "No accountId needed — the code alone identifies the account. Joiner is added as MEMBER.", security = @SecurityRequirement(name = "bearerAuth"))
@@ -61,7 +64,7 @@ public class AccountController {
     public ResponseEntity<AccountRegistrationResponse> join(
             @RequestBody @Valid AccountJoinRequest request,
             Authentication authentication) {
-        return ResponseEntity.ok(accountService.join(authentication.getName(), request.getJoinCode()));
+        return ResponseEntity.ok(accountMembershipService.join(authentication.getName(), request.getJoinCode()));
     }
 
     @Operation(summary = "Leave an account", description = "Self-removal. Blocked if you are the only OWNER — promote another member first.", security = @SecurityRequirement(name = "bearerAuth"))
@@ -69,7 +72,7 @@ public class AccountController {
     public ResponseEntity<Void> leave(
             @PathVariable UUID accountId,
             Authentication authentication) {
-        accountService.leave(authentication.getName(), accountId);
+        accountMembershipService.leave(authentication.getName(), accountId);
         return ResponseEntity.noContent().build();
     }
 
@@ -79,7 +82,7 @@ public class AccountController {
             @PathVariable UUID accountId,
             @PathVariable String username,
             Authentication authentication) {
-        accountService.removeMember(authentication.getName(), accountId, username);
+        accountMembershipService.removeMember(authentication.getName(), accountId, username);
         return ResponseEntity.noContent().build();
     }
 
@@ -89,7 +92,7 @@ public class AccountController {
             @PathVariable UUID accountId,
             @PathVariable String username,
             Authentication authentication) {
-        accountService.promote(authentication.getName(), accountId, username);
+        accountMembershipService.promote(authentication.getName(), accountId, username);
         return ResponseEntity.noContent().build();
     }
 }
