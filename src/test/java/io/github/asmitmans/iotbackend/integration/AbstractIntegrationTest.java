@@ -14,7 +14,7 @@ public abstract class AbstractIntegrationTest {
     protected static final PostgreSQLContainer POSTGRES;
 
     static {
-        POSTGRES = new PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"))
+        POSTGRES = new PostgreSQLContainer(DockerImageName.parse("postgres:16.9-alpine"))
                 .withDatabaseName("iotbackend_test")
                 .withUsername("test")
                 .withPassword("test");
