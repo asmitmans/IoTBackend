@@ -1,11 +1,14 @@
 package io.github.asmitmans.iotbackend.service;
 
+import io.github.asmitmans.iotbackend.dto.account.AccountRegistrationResponse;
+import io.github.asmitmans.iotbackend.dto.account.JoinCodeResponse;
 import io.github.asmitmans.iotbackend.entity.Account;
 import io.github.asmitmans.iotbackend.entity.AccountMembership;
 import io.github.asmitmans.iotbackend.entity.AccountRole;
 import io.github.asmitmans.iotbackend.entity.User;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
+import io.github.asmitmans.iotbackend.exception.TooManyAttemptsException;
 import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
@@ -13,19 +16,25 @@ import io.github.asmitmans.iotbackend.security.JoinAttemptService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,6 +72,163 @@ class AccountMembershipServiceTest {
 
         account = new Account("Finca");
         account.setId(ACCOUNT_ID);
+        ReflectionTestUtils.setField(account, "publicId", ACCOUNT_PUBLIC_ID);
+    }
+
+    // ---------- switchAccount() ----------
+
+    @Test
+    void switchAccount_asMember_returnsATokenScopedToThatAccount() {
+        AccountMembership membership = givenMembership("alice", 1, AccountRole.MEMBER);
+        when(scopedTokenService.issue(membership.getUser(), account)).thenReturn("TOKEN");
+
+        AccountRegistrationResponse response = service.switchAccount("alice", ACCOUNT_PUBLIC_ID);
+
+        assertThat(response.getPublicId()).isEqualTo(ACCOUNT_PUBLIC_ID);
+        assertThat(response.getName()).isEqualTo("Finca");
+        assertThat(response.getToken()).isEqualTo("TOKEN");
+    }
+
+    @Test
+    void switchAccount_notAMember_throwsAccessDeniedAndIssuesNoToken() {
+        User alice = givenUser("alice", 1);
+        givenAccount();
+        when(accountMembershipRepository.findByUserIdAndAccountId(alice.getId(), ACCOUNT_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.switchAccount("alice", ACCOUNT_PUBLIC_ID))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("User is not a member of this account");
+
+        verifyNoInteractions(scopedTokenService);
+    }
+
+    // ---------- generateJoinCode() ----------
+
+    @Test
+    void generateJoinCode_byOwner_storesHashPrefixAndExpiryAndReturnsThePlainCode() {
+        givenMembership("alice", 1, AccountRole.OWNER);
+        Instant expiresAt = Instant.now().plus(24, ChronoUnit.HOURS);
+        when(joinCodeService.issue()).thenReturn(new JoinCodeIssuance("ABCD1234", "HASH", "ABCD", expiresAt));
+
+        JoinCodeResponse response = service.generateJoinCode("alice", ACCOUNT_PUBLIC_ID);
+
+        assertThat(account.getJoinCodeHash()).isEqualTo("HASH");
+        assertThat(account.getJoinCodePrefix()).isEqualTo("ABCD");
+        assertThat(account.getJoinCodeExpiresAt()).isEqualTo(expiresAt);
+        verify(accountRepository).save(account);
+        assertThat(response.getJoinCode()).isEqualTo("ABCD1234");
+        assertThat(response.getExpiresAt()).isEqualTo(expiresAt);
+    }
+
+    @Test
+    void generateJoinCode_whenOneAlreadyExists_replacesIt() {
+        givenMembership("alice", 1, AccountRole.OWNER);
+        account.setJoinCodeHash("OLD_HASH");
+        account.setJoinCodePrefix("OLDP");
+        Instant expiresAt = Instant.now().plus(24, ChronoUnit.HOURS);
+        when(joinCodeService.issue()).thenReturn(new JoinCodeIssuance("ABCD1234", "HASH", "ABCD", expiresAt));
+
+        service.generateJoinCode("alice", ACCOUNT_PUBLIC_ID);
+
+        assertThat(account.getJoinCodeHash()).isEqualTo("HASH");
+        assertThat(account.getJoinCodePrefix()).isEqualTo("ABCD");
+    }
+
+    @Test
+    void generateJoinCode_requesterIsNotOwner_throwsAccessDeniedAndIssuesNothing() {
+        givenMembership("bob", 2, AccountRole.MEMBER);
+
+        assertThatThrownBy(() -> service.generateJoinCode("bob", ACCOUNT_PUBLIC_ID))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Only the account OWNER can generate a join code");
+
+        verifyNoInteractions(joinCodeService);
+        verify(accountRepository, never()).save(any());
+    }
+
+    // ---------- join() ----------
+
+    @Test
+    void join_withValidCode_addsAMemberAndReturnsAScopedToken() {
+        User alice = givenUser("alice", 1);
+        when(joinCodeService.resolveAndVerify("CODE")).thenReturn(account);
+        when(accountMembershipRepository.existsByUserIdAndAccountId(1, ACCOUNT_ID)).thenReturn(false);
+        when(scopedTokenService.issue(alice, account)).thenReturn("TOKEN");
+
+        AccountRegistrationResponse response = service.join("alice", "CODE");
+
+        ArgumentCaptor<AccountMembership> saved = ArgumentCaptor.forClass(AccountMembership.class);
+        verify(accountMembershipRepository).save(saved.capture());
+        assertThat(saved.getValue().getUser()).isSameAs(alice);
+        assertThat(saved.getValue().getAccount()).isSameAs(account);
+        assertThat(saved.getValue().getAccountRole()).isEqualTo(AccountRole.MEMBER);
+        verify(joinAttemptService).recordSuccess("alice");
+        verify(joinAttemptService, never()).recordFailure(any());
+        assertThat(response.getPublicId()).isEqualTo(ACCOUNT_PUBLIC_ID);
+        assertThat(response.getToken()).isEqualTo("TOKEN");
+    }
+
+    @Test
+    void join_tooManyAttempts_throwsBeforeDoingAnythingElse() {
+        doThrow(new TooManyAttemptsException("Too many failed join attempts. Try again in a minute."))
+                .when(joinAttemptService).checkAllowed("alice");
+
+        assertThatThrownBy(() -> service.join("alice", "CODE"))
+                .isInstanceOf(TooManyAttemptsException.class);
+
+        verifyNoInteractions(userRepository, joinCodeService);
+    }
+
+    @Test
+    void join_unknownUser_throwsNotFound() {
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.join("ghost", "CODE"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("User not found");
+
+        verifyNoInteractions(joinCodeService);
+    }
+
+    @Test
+    void join_invalidCode_recordsAFailureAndRethrows() {
+        givenUser("alice", 1);
+        when(joinCodeService.resolveAndVerify("BAD")).thenThrow(new AccessDeniedException("Invalid join code"));
+
+        assertThatThrownBy(() -> service.join("alice", "BAD"))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Invalid join code");
+
+        verify(joinAttemptService).recordFailure("alice");
+        verify(joinAttemptService, never()).recordSuccess(any());
+        verify(accountMembershipRepository, never()).save(any());
+    }
+
+    @Test
+    void join_expiredCode_recordsAFailureAndRethrows() {
+        givenUser("alice", 1);
+        when(joinCodeService.resolveAndVerify("OLD")).thenThrow(new ConflictException("Join code has expired"));
+
+        assertThatThrownBy(() -> service.join("alice", "OLD"))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Join code has expired");
+
+        verify(joinAttemptService).recordFailure("alice");
+        verify(accountMembershipRepository, never()).save(any());
+    }
+
+    @Test
+    void join_alreadyAMember_throwsConflictWithoutAddingOrRecordingSuccess() {
+        givenUser("alice", 1);
+        when(joinCodeService.resolveAndVerify("CODE")).thenReturn(account);
+        when(accountMembershipRepository.existsByUserIdAndAccountId(1, ACCOUNT_ID)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.join("alice", "CODE"))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("User is already a member of this account");
+
+        verify(joinAttemptService, never()).recordSuccess(any());
+        verify(accountMembershipRepository, never()).save(any());
     }
 
     // ---------- leave() ----------
