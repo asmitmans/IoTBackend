@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -24,15 +25,17 @@ public class DeviceService {
     private final DeviceModelRepository deviceModelRepository;
     private final LocationRepository locationRepository;
     private final ApiKeyService apiKeyService;
+    private final Clock clock;
 
     private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    public DeviceService(DeviceRepository deviceRepository, AccountRepository accountRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService) {
+    public DeviceService(DeviceRepository deviceRepository, AccountRepository accountRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService, Clock clock) {
         this.deviceRepository = deviceRepository;
         this.accountRepository = accountRepository;
         this.deviceModelRepository = deviceModelRepository;
         this.locationRepository = locationRepository;
         this.apiKeyService = apiKeyService;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -90,7 +93,7 @@ public class DeviceService {
         device.setAccount(account);
         device.setName(name);
         device.setStatus("PENDING");
-        device.setClaimExpiresAt(Instant.now().plusSeconds(300));
+        device.setClaimExpiresAt(Instant.now(clock).plusSeconds(300));
 
         deviceRepository.save(device);
 
@@ -108,7 +111,9 @@ public class DeviceService {
             throw new ConflictException("Device is not pending enrollment");
         }
 
-        if (Instant.now().isAfter(device.getClaimExpiresAt())) {
+        Instant now = Instant.now(clock);
+
+        if (now.isAfter(device.getClaimExpiresAt())) {
             device.setStatus("UNCLAIMED");
             device.setAccount(null);
             device.setClaimExpiresAt(null);
@@ -120,7 +125,7 @@ public class DeviceService {
 
         device.setApiKeyHash(apiKeyService.hash(apiKeyPlain));
         device.setApiKeyPrefix(apiKeyService.extractPrefix(apiKeyPlain));
-        device.setClaimedAt(Instant.now());
+        device.setClaimedAt(now);
         device.setClaimExpiresAt(null);
         device.setStatus("ACTIVE");
 
