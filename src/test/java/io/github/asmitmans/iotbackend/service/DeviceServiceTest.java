@@ -33,6 +33,7 @@ public class DeviceServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
     private static final String SERIAL = "ABCDEFGHJKLMNPQR";
+    private static final Long DEVICE_ID = 42L;
 
     @Mock
     private DeviceRepository deviceRepository;
@@ -191,6 +192,45 @@ public class DeviceServiceTest {
                 .hasMessage("Device not found");
 
         verifyNoInteractions(apiKeyService);
+    }
+
+    // ---------- updateStatus() ----------
+
+    @ParameterizedTest
+    @ValueSource(strings = {"ACTIVE", "INACTIVE"})
+    void updateStatus_withAllowedStatus_setsStatusAndSaves(String newStatus) {
+        Device device = deviceWithStatus("ACTIVE");
+        when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
+
+        service.updateStatus(DEVICE_ID, newStatus);
+
+        assertThat(device.getStatus()).isEqualTo(newStatus);
+        verify(deviceRepository).save(device);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"UNCLAIMED", "PENDING", "active", "UNKNOWN"})
+    void updateStatus_withDisallowedStatus_throwsIllegalArgumentAndDoesNotSave(String newStatus) {
+        Device device = deviceWithStatus("ACTIVE");
+        when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
+
+        assertThatThrownBy(() -> service.updateStatus(DEVICE_ID, newStatus))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Invalid status: " + newStatus);
+
+        assertThat(device.getStatus()).isEqualTo("ACTIVE");
+        verify(deviceRepository, never()).save(any());
+    }
+
+    @Test
+    void updateStatus_whenDeviceDoesNotExist_throwsNotFoundAndDoesNotSave() {
+        when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.updateStatus(DEVICE_ID, "ACTIVE"))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device not found");
+
+        verify(deviceRepository, never()).save(any());
     }
 
     // ---------- helpers ----------
