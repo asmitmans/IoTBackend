@@ -1,5 +1,6 @@
 package io.github.asmitmans.iotbackend.service;
 
+import io.github.asmitmans.iotbackend.dto.device.DeviceClaimResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceEnrollResponse;
 import io.github.asmitmans.iotbackend.entity.Account;
 import io.github.asmitmans.iotbackend.entity.Device;
@@ -119,6 +120,79 @@ public class DeviceServiceTest {
         verifyNoInteractions(accountRepository);
     }
 
+    // ---------- claim() ----------
+
+    @Test
+    void claim_fromPendingWithinWindow_activatesStoresKeyHashAndReturnsPlainKey() {
+        Device device = pendingDeviceExpiringAt(NOW.plusSeconds(60));
+        when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
+        givenApiKeyGenerated("iotdev_PLAIN", "HASH", "iotdev_PL");
+
+        DeviceClaimResponse response = service.claim(SERIAL);
+
+        assertThat(device.getStatus()).isEqualTo("ACTIVE");
+        assertThat(device.getApiKeyHash()).isEqualTo("HASH");
+        assertThat(device.getApiKeyPrefix()).isEqualTo("iotdev_PL");
+        assertThat(device.getClaimedAt()).isEqualTo(NOW);
+        assertThat(device.getClaimExpiresAt()).isNull();
+        verify(deviceRepository).save(device);
+        assertThat(response.getApiKeyPlain()).isEqualTo("iotdev_PLAIN");
+        assertThat(response.getStatus()).isEqualTo("ACTIVE");
+        assertThat(response.getSerialNumber()).isEqualTo(SERIAL);
+    }
+
+    @Test
+    void claim_exactlyAtExpiry_isStillAccepted() {
+        Device device = pendingDeviceExpiringAt(NOW);
+        when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
+        givenApiKeyGenerated("iotdev_PLAIN", "HASH", "iotdev_PL");
+
+        service.claim(SERIAL);
+
+        assertThat(device.getStatus()).isEqualTo("ACTIVE");
+    }
+
+    @Test
+    void claim_whenWindowExpired_resetsToUnclaimedSavesAndThrowsConflict() {
+        Device device = pendingDeviceExpiringAt(NOW.minusSeconds(1));
+        when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
+
+        assertThatThrownBy(() -> service.claim(SERIAL))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Enrollment window expired");
+
+        assertThat(device.getStatus()).isEqualTo("UNCLAIMED");
+        assertThat(device.getAccount()).isNull();
+        assertThat(device.getClaimExpiresAt()).isNull();
+        verify(deviceRepository).save(device);
+        verifyNoInteractions(apiKeyService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"UNCLAIMED", "ACTIVE", "INACTIVE"})
+    void claim_whenDeviceIsNotPending_throwsConflictAndDoesNotSave(String status) {
+        Device device = deviceWithStatus(status);
+        when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
+
+        assertThatThrownBy(() -> service.claim(SERIAL))
+                .isInstanceOf(ConflictException.class)
+                .hasMessage("Device is not pending enrollment");
+
+        verifyNoInteractions(apiKeyService);
+        verify(deviceRepository, never()).save(any());
+    }
+
+    @Test
+    void claim_whenDeviceDoesNotExist_throwsNotFound() {
+        when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.claim(SERIAL))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device not found");
+
+        verifyNoInteractions(apiKeyService);
+    }
+
     // ---------- helpers ----------
 
     private Device deviceWithStatus(String status) {
@@ -126,5 +200,18 @@ public class DeviceServiceTest {
         device.setSerialNumber(SERIAL);
         device.setStatus(status);
         return device;
+    }
+
+    private Device pendingDeviceExpiringAt(Instant claimExpiresAt) {
+        Device device = deviceWithStatus("PENDING");
+        device.setAccount(new Account());
+        device.setClaimExpiresAt(claimExpiresAt);
+        return device;
+    }
+
+    private void givenApiKeyGenerated(String plain, String hash, String prefix) {
+        when(apiKeyService.generate("iotdev_")).thenReturn(plain);
+        when(apiKeyService.hash(plain)).thenReturn(hash);
+        when(apiKeyService.extractPrefix(plain)).thenReturn(prefix);
     }
 }
