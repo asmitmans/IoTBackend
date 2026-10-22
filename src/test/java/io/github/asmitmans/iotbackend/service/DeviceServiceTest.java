@@ -2,8 +2,12 @@ package io.github.asmitmans.iotbackend.service;
 
 import io.github.asmitmans.iotbackend.dto.device.DeviceClaimResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceEnrollResponse;
+import io.github.asmitmans.iotbackend.dto.device.DeviceRegistrationRequest;
+import io.github.asmitmans.iotbackend.dto.device.DeviceRegistrationResponse;
 import io.github.asmitmans.iotbackend.entity.Account;
 import io.github.asmitmans.iotbackend.entity.Device;
+import io.github.asmitmans.iotbackend.entity.DeviceModel;
+import io.github.asmitmans.iotbackend.entity.Location;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
@@ -15,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -34,6 +39,10 @@ public class DeviceServiceTest {
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
     private static final String SERIAL = "ABCDEFGHJKLMNPQR";
     private static final Long DEVICE_ID = 42L;
+    private static final Long MODEL_ID = 7L;
+    private static final Long LOCATION_ID = 3L;
+    private static final String SERIAL_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
 
     @Mock
     private DeviceRepository deviceRepository;
@@ -233,6 +242,77 @@ public class DeviceServiceTest {
         verify(deviceRepository, never()).save(any());
     }
 
+    // ---------- register() ----------
+
+    @Test
+    void register_withModelAndNoLocation_savesUnclaimedDeviceWithGeneratedSerial() {
+        DeviceModel model = new DeviceModel();
+        when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.of(model));
+        givenSaveReturnsTheSameDevice();
+
+        DeviceRegistrationResponse response = service.register(registrationRequest(MODEL_ID, null));
+
+        Device saved = capturedSavedDevice();
+        assertThat(saved.getSerialNumber()).matches("[" + SERIAL_ALPHABET + "]{16}");
+        assertThat(saved.getStatus()).isEqualTo("UNCLAIMED");
+        assertThat(saved.getDeviceModel()).isSameAs(model);
+        assertThat(saved.getLocation()).isNull();
+        verifyNoInteractions(locationRepository);
+        assertThat(response.getSerialNumber()).isEqualTo(saved.getSerialNumber());
+        assertThat(response.getStatus()).isEqualTo("UNCLAIMED");
+    }
+
+    @Test
+    void register_withLocation_assignsTheLocation() {
+        Location location = new Location();
+        when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.of(new DeviceModel()));
+        when(locationRepository.findById(LOCATION_ID)).thenReturn(Optional.of(location));
+        givenSaveReturnsTheSameDevice();
+
+        service.register(registrationRequest(MODEL_ID, LOCATION_ID));
+
+        assertThat(capturedSavedDevice().getLocation()).isSameAs(location);
+    }
+
+    @Test
+    void register_whenGeneratedSerialCollides_retriesUntilItIsFree() {
+        when(deviceRepository.findBySerialNumber(anyString()))
+                .thenReturn(Optional.of(new Device()))
+                .thenReturn(Optional.empty());
+        when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.of(new DeviceModel()));
+        givenSaveReturnsTheSameDevice();
+
+        service.register(registrationRequest(MODEL_ID, null));
+
+        ArgumentCaptor<String> checkedSerials = ArgumentCaptor.forClass(String.class);
+        verify(deviceRepository, times(2)).findBySerialNumber(checkedSerials.capture());
+        assertThat(capturedSavedDevice().getSerialNumber()).isEqualTo(checkedSerials.getAllValues().get(1));
+    }
+
+    @Test
+    void register_whenModelDoesNotExist_throwsNotFoundAndDoesNotSave() {
+        when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.register(registrationRequest(MODEL_ID, LOCATION_ID)))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Device model not found");
+
+        verifyNoInteractions(locationRepository);
+        verify(deviceRepository, never()).save(any());
+    }
+
+    @Test
+    void register_whenLocationDoesNotExist_throwsNotFoundAndDoesNotSave() {
+        when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.of(new DeviceModel()));
+        when(locationRepository.findById(LOCATION_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.register(registrationRequest(MODEL_ID, LOCATION_ID)))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("Location not found");
+
+        verify(deviceRepository, never()).save(any());
+    }
+
     // ---------- helpers ----------
 
     private Device deviceWithStatus(String status) {
@@ -253,5 +333,22 @@ public class DeviceServiceTest {
         when(apiKeyService.generate("iotdev_")).thenReturn(plain);
         when(apiKeyService.hash(plain)).thenReturn(hash);
         when(apiKeyService.extractPrefix(plain)).thenReturn(prefix);
+    }
+
+    private DeviceRegistrationRequest registrationRequest(Long modelId, Long locationId) {
+        DeviceRegistrationRequest request = new DeviceRegistrationRequest();
+        request.setDeviceModelId(modelId);
+        request.setLocationId(locationId);
+        return request;
+    }
+
+    private void givenSaveReturnsTheSameDevice() {
+        when(deviceRepository.save(any(Device.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    private Device capturedSavedDevice() {
+        ArgumentCaptor<Device> saved = ArgumentCaptor.forClass(Device.class);
+        verify(deviceRepository).save(saved.capture());
+        return saved.getValue();
     }
 }
