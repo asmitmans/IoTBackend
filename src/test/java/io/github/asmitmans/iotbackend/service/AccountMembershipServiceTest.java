@@ -12,7 +12,6 @@ import io.github.asmitmans.iotbackend.exception.TooManyAttemptsException;
 import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
-import io.github.asmitmans.iotbackend.security.JoinAttemptService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
