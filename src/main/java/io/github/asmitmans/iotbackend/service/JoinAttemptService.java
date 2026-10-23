@@ -1,4 +1,4 @@
-package io.github.asmitmans.iotbackend.security;
+package io.github.asmitmans.iotbackend.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
