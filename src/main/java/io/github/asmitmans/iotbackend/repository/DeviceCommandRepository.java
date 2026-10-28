@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface DeviceCommandRepository extends JpaRepository<DeviceCommand,
@@ -14,5 +15,5 @@ public interface DeviceCommandRepository extends JpaRepository<DeviceCommand,
 
     boolean existsByDeviceIdAndStatus(Long deviceId, String status);
 
-    boolean existsByDeviceIdAndStatusAndType(Long deviceId, String status, String type);
+    List<DeviceCommand> findByDeviceIdAndStatusAndType(Long deviceId, String status, String type);
 }

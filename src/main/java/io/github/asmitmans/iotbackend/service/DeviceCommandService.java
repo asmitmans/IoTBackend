@@ -4,7 +4,6 @@ import io.github.asmitmans.iotbackend.dto.device.DeviceCommandRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceCommandResponse;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.entity.DeviceCommand;
-import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.DeviceCommandRepository;
 import io.github.asmitmans.iotbackend.repository.DeviceRepository;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,12 +37,10 @@ public class DeviceCommandService {
         Long effectiveAccountId = accountId != null ?
                 accountId : device.getAccount().getId().longValue();
 
-        if (deviceCommandRepository.existsByDeviceIdAndStatusAndType(device.getId(), "QUEUED", request.getType())) {
-            throw new ConflictException("Command of type '" + request.getType() +
-                                                "' already queued for this device");
-        }
-
-
+        List<DeviceCommand> queuedOfSameType = deviceCommandRepository
+                .findByDeviceIdAndStatusAndType(device.getId(), "QUEUED", request.getType());
+        queuedOfSameType.forEach(previous -> previous.setStatus("SUPERSEDED"));
+        deviceCommandRepository.saveAllAndFlush(queuedOfSameType);
 
         DeviceCommand command = new DeviceCommand();
         command.setDevice(device);
