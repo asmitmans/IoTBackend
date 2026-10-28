@@ -24,6 +24,10 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     @Query("SELECT d FROM Device d WHERE d.serialNumber = :serial")
     Optional<Device> findBySerialNumberForUpdate(@Param("serial") String serial);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM Device d WHERE d.id = :id")
+    Optional<Device> findByIdForUpdate(@Param("id") Long id);
+
     List<Device> findByAccountId(Long accountId);
     List<Device> findByIdInAndAccountId(List<Long> ids, Long accountId);
 

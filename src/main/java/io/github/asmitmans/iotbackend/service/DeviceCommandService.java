@@ -28,7 +28,7 @@ public class DeviceCommandService {
     @Transactional
     public void queueCommand(Long deviceId, DeviceCommandRequest request,
                                   Long accountId) {
-        Device device = deviceRepository.findById(deviceId)
+        Device device = deviceRepository.findByIdForUpdate(deviceId)
                                         .filter(d -> accountId == null ||
                                                 (d.getAccount() != null &&
                                                         d.getAccount().getId().longValue() == accountId))
