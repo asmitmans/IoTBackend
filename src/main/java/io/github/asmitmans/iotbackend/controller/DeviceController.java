@@ -138,12 +138,12 @@ public class DeviceController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "Create command for device", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Queue command for device", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{devicePublicId}/commands")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Void> createCommand(
+    public ResponseEntity<Void> queueCommand(
             @PathVariable UUID devicePublicId,
-            @RequestBody @Valid CreateCommandRequest request,
+            @RequestBody @Valid DeviceCommandRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         boolean isAdmin = principal.getAuthorities().stream()
                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -152,7 +152,7 @@ public class DeviceController {
             throw new AccessDeniedException("User has no associated account");
         }
         Long deviceId = deviceService.resolveDeviceId(devicePublicId);
-        deviceCommandService.createCommand(deviceId, request, accountId);
+        deviceCommandService.queueCommand(deviceId, request, accountId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

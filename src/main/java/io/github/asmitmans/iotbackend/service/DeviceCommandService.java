@@ -1,6 +1,6 @@
 package io.github.asmitmans.iotbackend.service;
 
-import io.github.asmitmans.iotbackend.dto.device.CreateCommandRequest;
+import io.github.asmitmans.iotbackend.dto.device.DeviceCommandRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceCommandResponse;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.entity.DeviceCommand;
@@ -26,8 +26,8 @@ public class DeviceCommandService {
     }
 
     @Transactional
-    public void createCommand(Long deviceId, CreateCommandRequest request,
-                              Long accountId) {
+    public void queueCommand(Long deviceId, DeviceCommandRequest request,
+                                  Long accountId) {
         Device device = deviceRepository.findById(deviceId)
                                         .filter(d -> accountId == null ||
                                                 (d.getAccount() != null &&

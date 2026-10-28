@@ -2,14 +2,14 @@ package io.github.asmitmans.iotbackend.dto.device;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class CreateCommandRequest {
+public class DeviceCommandRequest {
 
     @NotBlank
     private String type;
 
     private String payload;
 
-    public CreateCommandRequest() {
+    public DeviceCommandRequest() {
     }
 
     public String getType() {
