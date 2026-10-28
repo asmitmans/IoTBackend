@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
+import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class JoinCodeServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository);
+        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository, Clock.systemUTC());
     }
 
     // ---------- issue() ----------
@@ -93,7 +94,7 @@ public class JoinCodeServiceTest {
 
     @Test
     void issue_honorsCustomProperties() {
-        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService, accountRepository);
+        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService, accountRepository, Clock.systemUTC());
         when(apiKeyService.hash(anyString())).thenReturn("HASH");
 
         Instant before = Instant.now();

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 
 @Service
@@ -17,21 +18,25 @@ public class JoinCodeService {
     private final JoinCodeProperties props;
     private final ApiKeyService apiKeyService;
     private final AccountRepository accountRepository;
+    private final Clock clock;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public JoinCodeService(JoinCodeProperties props,
                            ApiKeyService apiKeyService,
-                           AccountRepository accountRepository) {
+                           AccountRepository accountRepository,
+                           Clock clock) {
         this.props = props;
         this.apiKeyService = apiKeyService;
         this.accountRepository = accountRepository;
+        this.clock = clock;
     }
 
     public JoinCodeIssuance issue() {
         String plainCode = generateCode();
         String hash = apiKeyService.hash(plainCode);
         String prefix = plainCode.substring(0, props.prefixLength());
-        Instant expiresAt = Instant.now().plus(props.validityHours(), ChronoUnit.HOURS);
+        Instant expiresAt = Instant.now(clock).plus(props.validityHours(), ChronoUnit.HOURS);
+
 
         return new JoinCodeIssuance(plainCode, hash, prefix, expiresAt);
     }
@@ -47,7 +52,7 @@ public class JoinCodeService {
                                            .findFirst()
                                            .orElseThrow(() -> new AccessDeniedException("Invalid join code"));
 
-        if (Instant.now().isAfter(account.getJoinCodeExpiresAt())) {
+        if (Instant.now(clock).isAfter(account.getJoinCodeExpiresAt())) {
             throw new ConflictException("Join code has expired");
         }
 
