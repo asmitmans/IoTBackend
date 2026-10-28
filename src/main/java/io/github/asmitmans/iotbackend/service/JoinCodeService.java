@@ -37,7 +37,6 @@ public class JoinCodeService {
         String prefix = plainCode.substring(0, props.prefixLength());
         Instant expiresAt = Instant.now(clock).plus(props.validityHours(), ChronoUnit.HOURS);
 
-
         return new JoinCodeIssuance(plainCode, hash, prefix, expiresAt);
     }
 

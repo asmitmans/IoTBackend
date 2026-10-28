@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.time.Instant;
 import java.time.Clock;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import static org.mockito.Mockito.*;
 public class JoinCodeServiceTest {
 
     private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
+    private static final Clock FIXED_CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
 
     @Mock
     private ApiKeyService apiKeyService;
@@ -37,7 +40,7 @@ public class JoinCodeServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository, Clock.systemUTC());
+        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository, FIXED_CLOCK);
     }
 
     // ---------- issue() ----------
@@ -75,11 +78,9 @@ public class JoinCodeServiceTest {
     void issue_expiresAfterTheConfiguredValidityHours() {
         when(apiKeyService.hash(anyString())).thenReturn("HASH");
 
-        Instant before = Instant.now();
         JoinCodeIssuance issuance = service.issue();
-        Instant after = Instant.now();
 
-        assertThat(issuance.expiresAt()).isBetween(before.plus(24, ChronoUnit.HOURS), after.plus(24, ChronoUnit.HOURS));
+        assertThat(issuance.expiresAt()).isEqualTo(NOW.plus(24, ChronoUnit.HOURS));
     }
 
     @Test
@@ -94,23 +95,21 @@ public class JoinCodeServiceTest {
 
     @Test
     void issue_honorsCustomProperties() {
-        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService, accountRepository, Clock.systemUTC());
+        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService, accountRepository, FIXED_CLOCK);
         when(apiKeyService.hash(anyString())).thenReturn("HASH");
 
-        Instant before = Instant.now();
         JoinCodeIssuance issuance = custom.issue();
-        Instant after = Instant.now();
 
         assertThat(issuance.plainCode()).matches("[AB]{6}");
         assertThat(issuance.prefix()).hasSize(2);
-        assertThat(issuance.expiresAt()).isBetween(before.plus(1, ChronoUnit.HOURS), after.plus(1, ChronoUnit.HOURS));
+        assertThat(issuance.expiresAt()).isEqualTo(NOW.plus(1, ChronoUnit.HOURS));
     }
 
     // ---------- resolveAndVerify() ----------
 
     @Test
     void resolveAndVerify_returnsTheAccountWhenPrefixHashAndExpirationAreValid() {
-        Account account = accountWithJoinCode("HASH", Instant.now().plus(1, ChronoUnit.HOURS));
+        Account account = accountWithJoinCode("HASH", NOW.plus(1, ChronoUnit.HOURS));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(true);
 
@@ -130,7 +129,7 @@ public class JoinCodeServiceTest {
 
     @Test
     void resolveAndVerify_throwsAccessDeniedWhenTheHashDoesNotMatch() {
-        Account account = accountWithJoinCode("HASH", Instant.now().plus(1, ChronoUnit.HOURS));
+        Account account = accountWithJoinCode("HASH", NOW.plus(1, ChronoUnit.HOURS));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(false);
 
@@ -141,7 +140,7 @@ public class JoinCodeServiceTest {
 
     @Test
     void resolveAndVerify_ignoresAccountsWithoutAStoredHash() {
-        Account account = accountWithJoinCode(null, Instant.now().plus(1, ChronoUnit.HOURS));
+        Account account = accountWithJoinCode(null, NOW.plus(1, ChronoUnit.HOURS));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
 
         assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
@@ -152,8 +151,8 @@ public class JoinCodeServiceTest {
 
     @Test
     void resolveAndVerify_picksTheMatchingAccountAmongPrefixCollisions() {
-        Account other = accountWithJoinCode("OTHER_HASH", Instant.now().plus(1, ChronoUnit.HOURS));
-        Account expected = accountWithJoinCode("HASH", Instant.now().plus(1, ChronoUnit.HOURS));
+        Account other = accountWithJoinCode("OTHER_HASH", NOW.plus(1, ChronoUnit.HOURS));
+        Account expected = accountWithJoinCode("HASH", NOW.plus(1, ChronoUnit.HOURS));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(other, expected));
         when(apiKeyService.verify("ABCD1234", "OTHER_HASH")).thenReturn(false);
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(true);
@@ -165,13 +164,24 @@ public class JoinCodeServiceTest {
 
     @Test
     void resolveAndVerify_throwsConflictWhenTheCodeHasExpired() {
-        Account account = accountWithJoinCode("HASH", Instant.now().minus(1, ChronoUnit.MINUTES));
+        Account account = accountWithJoinCode("HASH", NOW.minusSeconds(1));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(true);
 
         assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
                 .isInstanceOf(ConflictException.class)
                 .hasMessage("Join code has expired");
+    }
+
+    @Test
+    void resolveAndVerify_exactlyAtExpiration_isStillAccepted() {
+        Account account = accountWithJoinCode("HASH", NOW);
+        when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
+        when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(true);
+
+        Account result = service.resolveAndVerify("ABCD1234");
+
+        assertThat(result).isSameAs(account);
     }
 
     @Test
