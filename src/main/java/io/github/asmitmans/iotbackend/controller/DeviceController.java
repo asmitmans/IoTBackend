@@ -153,7 +153,7 @@ public class DeviceController {
         }
         Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceCommandService.queueCommand(deviceId, request, accountId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.accepted().build();
     }
 
     @Operation(summary = "Get next pending command", security = @SecurityRequirement(name = "ApiKey"))
