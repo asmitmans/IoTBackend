@@ -11,6 +11,7 @@ import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,10 +21,14 @@ public class DeviceCommandService {
 
     private final DeviceCommandRepository deviceCommandRepository;
     private final DeviceRepository deviceRepository;
+    private final Clock clock;
 
-    public DeviceCommandService(DeviceCommandRepository deviceCommandRepository, DeviceRepository deviceRepository) {
+    public DeviceCommandService(DeviceCommandRepository deviceCommandRepository,
+                                DeviceRepository deviceRepository,
+                                Clock clock) {
         this.deviceCommandRepository = deviceCommandRepository;
         this.deviceRepository = deviceRepository;
+        this.clock = clock;
     }
 
     @Transactional
@@ -67,7 +72,7 @@ public class DeviceCommandService {
                         device.getId(), "QUEUED")
                 .map(command -> {
                     command.setStatus("DELIVERED");
-                    command.setDeliveredAt(Instant.now());
+                    command.setDeliveredAt(Instant.now(clock));
                     deviceCommandRepository.save(command);
 
                     boolean stillPending = deviceCommandRepository
