@@ -4,6 +4,7 @@ import io.github.asmitmans.iotbackend.dto.device.DeviceCommandRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceCommandResponse;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.entity.DeviceCommand;
+import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.DeviceCommandRepository;
 import io.github.asmitmans.iotbackend.repository.DeviceRepository;
@@ -33,6 +34,10 @@ public class DeviceCommandService {
                                                 (d.getAccount() != null &&
                                                         d.getAccount().getId().longValue() == accountId))
                                         .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+
+        if (device.getAccount() == null) {
+            throw new ConflictException("Device is not enrolled to an account");
+        }
 
         Long effectiveAccountId = accountId != null ?
                 accountId : device.getAccount().getId().longValue();
