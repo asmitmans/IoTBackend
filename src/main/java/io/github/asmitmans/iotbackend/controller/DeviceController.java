@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Devices", description = "Device lifecycle, config, state and command management")
@@ -124,6 +125,22 @@ public class DeviceController {
         Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceConfigService.setDesiredConfig(deviceId, request, accountId);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Get device config status", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/{devicePublicId}/config/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<DeviceConfigStatusResponse>> getConfigStatus(
+            @PathVariable UUID devicePublicId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        Long accountId = accountResolver.resolveOwnAccountIdOrNull(principal);
+        if (!isAdmin && accountId == null) {
+            throw new AccessDeniedException("User has no associated account");
+        }
+        Long deviceId = deviceService.resolveDeviceId(devicePublicId);
+        return ResponseEntity.ok(deviceConfigService.getConfigStatus(deviceId, accountId));
     }
 
     @Operation(summary = "Report device state", security = @SecurityRequirement(name = "ApiKey"))

@@ -2,6 +2,7 @@ package io.github.asmitmans.iotbackend.service;
 
 import io.github.asmitmans.iotbackend.dto.device.AdminConfigRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceConfigResponse;
+import io.github.asmitmans.iotbackend.dto.device.DeviceConfigStatusResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceStateRequest;
 import io.github.asmitmans.iotbackend.entity.Device;
 import io.github.asmitmans.iotbackend.entity.DeviceConfig;
@@ -11,6 +12,8 @@ import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -102,5 +105,33 @@ public class DeviceConfigService {
         device.setConfigPending(true);
         deviceRepository.save(device);
     }
+
+    // GET /config/status -> user reads desired vs reported state per key
+    @Transactional(readOnly = true)
+    public List<DeviceConfigStatusResponse> getConfigStatus(Long deviceId, Long accountId) {
+        Device device = deviceRepository.findById(deviceId)
+                .filter(d -> accountId == null ||
+                        (d.getAccount() != null &&
+                                d.getAccount().getId().longValue() == accountId))
+                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+
+        return deviceConfigRepository.findByDeviceId(device.getId())
+                .stream()
+                .sorted(Comparator.comparing(DeviceConfig::getKey))
+                .map(this::toStatusResponse)
+                .toList();
+    }
+
+    private DeviceConfigStatusResponse toStatusResponse(DeviceConfig config) {
+        DeviceConfigStatusResponse response = new DeviceConfigStatusResponse();
+        response.setKey(config.getKey());
+        response.setDesiredValue(config.getDesiredValue());
+        response.setReportedValue(config.getReportedValue());
+        response.setStatus(config.getStatus());
+        response.setUpdatedAt(config.getUpdatedAt());
+        return response;
+    }
+
+
 
 }
