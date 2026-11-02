@@ -56,9 +56,11 @@ public class DeviceConfigService {
                     });
 
             config.setReportedValue(value);
-            config.setStatus(
-                    value.equals(config.getDesiredValue()) ? "SYNCED" : "CONFLICT"
-            );
+            if (config.getDesiredValue() == null) {
+                config.setStatus("REPORTED");
+            } else {
+                config.setStatus(value.equals(config.getDesiredValue()) ? "SYNCED" : "CONFLICT");
+            }
             deviceConfigRepository.save(config);
         });
 
