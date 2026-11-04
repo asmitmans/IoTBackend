@@ -3,7 +3,6 @@ package io.github.asmitmans.iotbackend.entity;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "account")
@@ -74,16 +73,13 @@ public class Account extends PubliclyIdentifiableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        Account account = (Account) o;
-        return Objects.equals(id, account.id);
+        if (this == o) return true;
+        if (!(o instanceof Account other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
 }

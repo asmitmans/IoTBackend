@@ -3,7 +3,6 @@ package io.github.asmitmans.iotbackend.entity;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -70,13 +69,12 @@ public class DeviceModel extends AuditableEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeviceModel)) return false;
-        DeviceModel that = (DeviceModel) o;
-        return Objects.equals(id, that.id);
+        if (!(o instanceof DeviceModel other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
 }

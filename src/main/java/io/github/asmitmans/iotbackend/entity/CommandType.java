@@ -2,8 +2,6 @@ package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
 @Table(name = "command_type")
 public class CommandType extends AuditableEntity {
@@ -47,12 +45,13 @@ public class CommandType extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof CommandType that)) return false;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof CommandType other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
 }

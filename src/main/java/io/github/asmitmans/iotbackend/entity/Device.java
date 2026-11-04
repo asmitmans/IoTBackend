@@ -2,7 +2,6 @@ package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "device")
@@ -53,15 +52,6 @@ public class Device extends PubliclyIdentifiableEntity {
 
     public Device() {}
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Device device)) return false;
-        return Objects.equals(id, device.id);
-    }
-
-    @Override
-    public int hashCode() { return Objects.hashCode(id); }
-
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -100,4 +90,16 @@ public class Device extends PubliclyIdentifiableEntity {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Device other)) return false;
+        return id != null && id.equals(other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

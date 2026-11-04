@@ -5,7 +5,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "device_command")
@@ -112,15 +111,13 @@ public class DeviceCommand extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof DeviceCommand that))
-            return false;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof DeviceCommand other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return getClass().hashCode();
     }
 }

@@ -5,7 +5,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.Objects;
 
 @Entity
 @Table(name = "measurement")
@@ -95,19 +94,20 @@ public class Measurement {
         this.sequenceNumber = sequenceNumber;
     }
 
+    public Long getDeviceId() {
+        return device != null ? device.getId() : null;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Measurement that)) return false;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof Measurement other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
-    }
-
-    public Long getDeviceId() {
-        return device != null ? device.getId() : null;
+        return getClass().hashCode();
     }
 
 }

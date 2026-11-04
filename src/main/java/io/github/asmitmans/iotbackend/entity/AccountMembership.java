@@ -2,8 +2,6 @@ package io.github.asmitmans.iotbackend.entity;
 
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
 @Table(name = "account_membership")
 public class AccountMembership extends AuditableEntity {
@@ -67,16 +65,13 @@ public class AccountMembership extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        AccountMembership that = (AccountMembership) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof AccountMembership other)) return false;
+        return id != null && id.equals(other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
 }
