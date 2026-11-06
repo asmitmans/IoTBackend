@@ -10,6 +10,7 @@ import java.util.HexFormat;
 public class ApiKeyService {
 
     private static final int KEY_BYTES = 32;
+    private static final int LOOKUP_PREFIX_LENGTH = 16;
     private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -24,7 +25,7 @@ public class ApiKeyService {
     }
 
     public String extractPrefix(String apiKey) {
-        return apiKey.substring(0, 8);
+        return apiKey.length() > LOOKUP_PREFIX_LENGTH ? apiKey.substring(0, LOOKUP_PREFIX_LENGTH) : apiKey;
     }
 
     public String hash(String apiKey) {

@@ -32,7 +32,7 @@ public class Device extends PubliclyIdentifiableEntity {
     @Column(length = 255)
     private String apiKeyHash;
 
-    @Column(length = 8)
+    @Column(length = 16)
     private String apiKeyPrefix;
 
     @Column(name = "claimed_at")
