@@ -114,7 +114,7 @@ public class DeviceController {
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> setConfig(
             @PathVariable UUID devicePublicId,
-            @RequestBody @Valid AdminConfigRequest request,
+            @RequestBody @Valid DeviceConfigRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
         boolean isAdmin = principal.getAuthorities().stream()
                                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));

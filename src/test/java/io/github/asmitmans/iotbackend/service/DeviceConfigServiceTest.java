@@ -1,6 +1,6 @@
 package io.github.asmitmans.iotbackend.service;
 
-import io.github.asmitmans.iotbackend.dto.device.AdminConfigRequest;
+import io.github.asmitmans.iotbackend.dto.device.DeviceConfigRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceConfigResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceConfigStatusResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceStateRequest;
@@ -270,8 +270,8 @@ public class DeviceConfigServiceTest {
         return request;
     }
 
-    private AdminConfigRequest desiredRequest(Map<String, String> desired) {
-        AdminConfigRequest request = new AdminConfigRequest();
+    private DeviceConfigRequest desiredRequest(Map<String, String> desired) {
+        DeviceConfigRequest request = new DeviceConfigRequest();
         request.setDesired(desired);
         return request;
     }

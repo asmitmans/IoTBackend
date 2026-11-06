@@ -7,12 +7,12 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Map;
 
-public class AdminConfigRequest {
+public class DeviceConfigRequest {
 
     @NotEmpty
     private Map<@NotBlank @Size(max = 100) String, @NotNull @Size(max = 255) String> desired;
 
-    public AdminConfigRequest() {
+    public DeviceConfigRequest() {
     }
 
     public Map<String, String> getDesired() {

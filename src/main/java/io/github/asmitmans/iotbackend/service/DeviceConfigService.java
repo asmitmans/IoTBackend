@@ -1,6 +1,6 @@
 package io.github.asmitmans.iotbackend.service;
 
-import io.github.asmitmans.iotbackend.dto.device.AdminConfigRequest;
+import io.github.asmitmans.iotbackend.dto.device.DeviceConfigRequest;
 import io.github.asmitmans.iotbackend.dto.device.DeviceConfigResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceConfigStatusResponse;
 import io.github.asmitmans.iotbackend.dto.device.DeviceStateRequest;
@@ -79,7 +79,7 @@ public class DeviceConfigService {
 
     // PUT /config -> admin set desired values
     @Transactional
-    public void setDesiredConfig(Long deviceId, AdminConfigRequest request, Long accountId) {
+    public void setDesiredConfig(Long deviceId, DeviceConfigRequest request, Long accountId) {
         Device device = deviceRepository.findById(deviceId)
                                         .filter(d -> accountId == null ||
                                                 (d.getAccount() != null &&
