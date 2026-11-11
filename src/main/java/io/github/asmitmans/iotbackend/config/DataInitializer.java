@@ -48,8 +48,9 @@ public class DataInitializer implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN", AccountRole.OWNER);
-    createUserIfNotExists("user", userPassword, "ROLE_USER", AccountRole.MEMBER);
+    // Platform admin: no account membership (operates across accounts, never inside one).
+    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN", null);
+    createUserIfNotExists("user", userPassword, "ROLE_USER", AccountRole.OWNER);
   }
 
 
@@ -62,8 +63,6 @@ public class DataInitializer implements ApplicationRunner {
     Role role = roleRepository.findByName(roleName)
                               .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
 
-    Account account = accountRepository.findAll().getFirst();
-
     User user = new User();
     user.setUsername(username);
     user.setPassword(passwordEncoder.encode(rawPassword));
@@ -72,6 +71,9 @@ public class DataInitializer implements ApplicationRunner {
 
     user = userRepository.save(user);
 
-    accountMembershipRepository.save(new AccountMembership(user, account, accountRole));
+    if (accountRole != null) {
+      Account account = accountRepository.findAll().getFirst();
+      accountMembershipRepository.save(new AccountMembership(user, account, accountRole));
+    }
   }
 }
