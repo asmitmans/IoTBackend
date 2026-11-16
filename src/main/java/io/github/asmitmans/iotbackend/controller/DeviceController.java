@@ -86,7 +86,7 @@ public class DeviceController {
     public ResponseEntity<DeviceEnrollResponse> enroll(
             @RequestBody @Valid DeviceEnrollRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
-        if (principal.getAccountId() == null) {
+        if (accountResolver.resolveOwnAccountIdOrNull(principal) == null) {
             throw new AccessDeniedException("User has no active account to enroll into");
         }
         return ResponseEntity.ok(deviceService.enroll(request.getSerialNumber(), principal.getAccountId(), request.getName()));
