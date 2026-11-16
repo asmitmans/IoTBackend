@@ -102,6 +102,23 @@ public abstract class AbstractIntegrationTest {
         return body(result);
     }
 
+    /** POST without a body, for action endpoints such as switch, leave or promote. */
+    protected MvcTestResult post(String uri, String token) {
+        var request = mvc.post().uri(uri);
+        if (token != null) {
+            request = request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
+        return request.exchange();
+    }
+
+    protected MvcTestResult delete(String uri, String token) {
+        var request = mvc.delete().uri(uri);
+        if (token != null) {
+            request = request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
+        return request.exchange();
+    }
+
     protected String loginToken(String username) {
         return login(username).get("token").asText();
     }
