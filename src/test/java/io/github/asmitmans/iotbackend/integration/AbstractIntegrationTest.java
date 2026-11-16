@@ -130,6 +130,42 @@ public abstract class AbstractIntegrationTest {
         return body(result);
     }
 
+    // ---------- devices ----------
+
+    /** Creates a device model as admin and returns its id. */
+    protected long createDeviceModel(String adminToken) {
+        MvcTestResult result = postJson("/api/v1/device-models", adminToken,
+                Map.of("name", "Model " + UUID.randomUUID().toString().substring(0, 8)));
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        return body(result).get("id").asLong();
+    }
+
+    /** Registers a new UNCLAIMED device as admin; returns the body (publicId, serialNumber, status). */
+    protected JsonNode registerDevice(String adminToken, long deviceModelId) {
+        MvcTestResult result = postJson("/api/v1/devices", adminToken, Map.of("deviceModelId", deviceModelId));
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        return body(result);
+    }
+
+    /** Enrolls a device into the caller's active account (device goes to PENDING). */
+    protected void enrollDevice(String userToken, String serialNumber) {
+        MvcTestResult result = postJson("/api/v1/devices/enroll", userToken,
+                Map.of("serialNumber", serialNumber, "name", "Sensor " + serialNumber.substring(0, 4)));
+        assertThat(result).hasStatusOk();
+    }
+
+    /** Claims a PENDING device (public endpoint) and returns its plain API key. */
+    protected String claimDevice(String serialNumber) {
+        MvcTestResult result = postJson("/api/v1/devices/claim", null, Map.of("serialNumber", serialNumber));
+        assertThat(result).hasStatusOk();
+        return body(result).get("apiKeyPlain").asText();
+    }
+
+    /** GET authenticated as a device, with its API key. */
+    protected MvcTestResult getAsDevice(String uri, String apiKey) {
+        return mvc.get().uri(uri).header(HttpHeaders.AUTHORIZATION, "ApiKey " + apiKey).exchange();
+    }
+
     // ---------- low level ----------
 
     protected MvcTestResult postJson(String uri, String token, Object body) {
