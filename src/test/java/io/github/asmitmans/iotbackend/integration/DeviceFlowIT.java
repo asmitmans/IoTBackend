@@ -128,7 +128,81 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
                 .hasStatus(HttpStatus.FORBIDDEN);
     }
 
+    // ---------- desired config (user side) ----------
+
+    @Test
+    void setDesiredConfig_leavesTheKeyPendingAndFlagsTheDevice() {
+        Owned farm = accountOwnedBy("alice");
+        String id = activeDeviceOf(farm);
+
+        assertThat(putJson("/api/v1/devices/" + id + "/config", farm.ownerToken(),
+                Map.of("desired", Map.of("interval", "60"))))
+                .hasStatusOk();
+
+        JsonNode status = body(get("/api/v1/devices/" + id + "/config/status", farm.ownerToken()));
+        assertThat(status).hasSize(1);
+        assertThat(status.get(0).get("key").asText()).isEqualTo("interval");
+        assertThat(status.get(0).get("desiredValue").asText()).isEqualTo("60");
+        assertThat(status.get(0).get("status").asText()).isEqualTo("PENDING");
+        assertThat(body(get("/api/v1/devices/" + id, farm.ownerToken())).get("configPending").asBoolean()).isTrue();
+    }
+
+    @Test
+    void setDesiredConfig_withEmptyMap_returns400() {
+        Owned farm = accountOwnedBy("alice");
+        String id = activeDeviceOf(farm);
+
+        assertThat(putJson("/api/v1/devices/" + id + "/config", farm.ownerToken(), Map.of("desired", Map.of())))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+    }
+
+    // ---------- commands (user side) ----------
+
+    @Test
+    void queueCommand_returns202AndFlagsTheDevice() {
+        Owned farm = accountOwnedBy("alice");
+        String id = activeDeviceOf(farm);
+
+        assertThat(postJson("/api/v1/devices/" + id + "/commands", farm.ownerToken(), Map.of("type", "REBOOT")))
+                .hasStatus(HttpStatus.ACCEPTED);
+
+        assertThat(body(get("/api/v1/devices/" + id, farm.ownerToken())).get("commandPending").asBoolean()).isTrue();
+    }
+
+    @Test
+    void queueCommand_asAdminForADeviceWithoutAccount_returns409() {
+        JsonNode device = registerDevice(adminToken, modelId);
+
+        assertThat(postJson("/api/v1/devices/" + publicId(device) + "/commands", adminToken, Map.of("type", "REBOOT")))
+                .hasStatus(HttpStatus.CONFLICT);
+    }
+
+    // ---------- isolation for config and commands ----------
+
+    @Test
+    void userOfAnotherAccount_cannotConfigureOrCommandTheDevice() {
+        Owned farm = accountOwnedBy("alice");
+        Owned other = accountOwnedBy("bob");
+        String id = activeDeviceOf(farm);
+
+        assertThat(putJson("/api/v1/devices/" + id + "/config", other.ownerToken(),
+                Map.of("desired", Map.of("interval", "60"))))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(get("/api/v1/devices/" + id + "/config/status", other.ownerToken()))
+                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(postJson("/api/v1/devices/" + id + "/commands", other.ownerToken(), Map.of("type", "REBOOT")))
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
     // ---------- helpers ----------
+
+    /** Registers, enrolls into the account and claims a device; returns its publicId. */
+    private String activeDeviceOf(Owned account) {
+        JsonNode device = registerDevice(adminToken, modelId);
+        enrollDevice(account.ownerToken(), serial(device));
+        claimDevice(serial(device));
+        return publicId(device);
+    }
 
     private static String serial(JsonNode device) {
         return device.get("serialNumber").asText();

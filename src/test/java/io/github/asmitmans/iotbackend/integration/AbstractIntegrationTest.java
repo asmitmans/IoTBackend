@@ -102,6 +102,16 @@ public abstract class AbstractIntegrationTest {
         return body(result);
     }
 
+    protected MvcTestResult putJson(String uri, String token, Object body) {
+        var request = mvc.put().uri(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(toJson(body));
+        if (token != null) {
+            request = request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+        }
+        return request.exchange();
+    }
+
     /** POST without a body, for action endpoints such as switch, leave or promote. */
     protected MvcTestResult post(String uri, String token) {
         var request = mvc.post().uri(uri);
