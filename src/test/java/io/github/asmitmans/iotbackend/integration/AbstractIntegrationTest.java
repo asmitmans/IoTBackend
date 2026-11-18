@@ -130,6 +130,29 @@ public abstract class AbstractIntegrationTest {
         return body(result);
     }
 
+    /** A user who owns an account, with a token scoped to that account. */
+    protected record Owned(String owner, String ownerToken, String accountId) {}
+
+    /** Registers a user who creates an account; the returned token is scoped to that account. */
+    protected Owned accountOwnedBy(String base) {
+        String owner = registerUser(base);
+        JsonNode account = createAccount(loginToken(owner), base + "'s farm");
+        return new Owned(owner, account.get("token").asText(), account.get("publicId").asText());
+    }
+
+    protected String joinCode(Owned account) {
+        var result = post("/api/v1/accounts/" + account.accountId() + "/join-code", account.ownerToken());
+        assertThat(result).hasStatusOk();
+        return body(result).get("joinCode").asText();
+    }
+
+    /** Joins an account with a code; returns the body (publicId, name and a token scoped to it). */
+    protected JsonNode join(String token, String joinCode) {
+        var result = postJson("/api/v1/accounts/join", token, Map.of("joinCode", joinCode));
+        assertThat(result).hasStatusOk();
+        return body(result);
+    }
+
     // ---------- devices ----------
 
     /** Creates a device model as admin and returns its id. */

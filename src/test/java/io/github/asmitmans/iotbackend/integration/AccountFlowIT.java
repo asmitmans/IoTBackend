@@ -132,27 +132,4 @@ public class AccountFlowIT extends AbstractIntegrationTest {
     void request_withInvalidToken_returns401() {
         assertThat(get("/api/v1/accounts/mine", "not-a-jwt")).hasStatus(HttpStatus.UNAUTHORIZED);
     }
-
-    // ---------- helpers ----------
-
-    private record Owned(String owner, String ownerToken, String accountId) {}
-
-    /** Registers a user who creates an account; the returned token is scoped to that account. */
-    private Owned accountOwnedBy(String base) {
-        String owner = registerUser(base);
-        JsonNode account = createAccount(loginToken(owner), base + "'s farm");
-        return new Owned(owner, account.get("token").asText(), account.get("publicId").asText());
-    }
-
-    private String joinCode(Owned account) {
-        var result = post("/api/v1/accounts/" + account.accountId() + "/join-code", account.ownerToken());
-        assertThat(result).hasStatusOk();
-        return body(result).get("joinCode").asText();
-    }
-
-    private JsonNode join(String token, String joinCode) {
-        var result = postJson("/api/v1/accounts/join", token, Map.of("joinCode", joinCode));
-        assertThat(result).hasStatusOk();
-        return body(result);
-    }
 }
