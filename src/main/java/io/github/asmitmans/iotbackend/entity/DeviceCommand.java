@@ -38,7 +38,7 @@ public class DeviceCommand extends AuditableEntity {
     private Instant deliveredAt;
 
     @PrePersist
-    protected void onCreate() {
+    protected void onQueue() {
         this.queuedAt = Instant.now();
     }
 
