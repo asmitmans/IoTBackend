@@ -169,7 +169,7 @@ public class DeviceService {
         r.setStatus(d.getStatus());
         r.setDeviceModelId(d.getDeviceModel().getId());
         r.setDeviceModelName(d.getDeviceModel().getName());
-        r.setLocationId(d.getLocation() != null ? d.getLocation().getId() : null);
+        r.setLocationId(d.getLocation() != null ? d.getLocation().getPublicId() : null);
         return r;
     }
 
@@ -181,7 +181,7 @@ public class DeviceService {
         r.setStatus(d.getStatus());
         r.setDeviceModelId(d.getDeviceModel().getId());
         r.setDeviceModelName(d.getDeviceModel().getName());
-        r.setLocationId(d.getLocation() != null ? d.getLocation().getId() : null);
+        r.setLocationId(d.getLocation() != null ? d.getLocation().getPublicId() : null);
         r.setConfigPending(d.isConfigPending());
         r.setCommandPending(d.isCommandPending());
         return r;

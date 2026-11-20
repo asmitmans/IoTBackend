@@ -2,12 +2,14 @@ package io.github.asmitmans.iotbackend.dto.location;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.UUID;
+
 public class LocationRequest {
 
     @NotBlank
     private String name;
 
-    private Long parentId;
+    private UUID parentPublicId;
 
     public LocationRequest() {
     }
@@ -20,11 +22,11 @@ public class LocationRequest {
         this.name = name;
     }
 
-    public Long getParentId() {
-        return parentId;
+    public UUID getParentPublicId() {
+        return parentPublicId;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
+    public void setParentPublicId(UUID parentPublicId) {
+        this.parentPublicId = parentPublicId;
     }
 }

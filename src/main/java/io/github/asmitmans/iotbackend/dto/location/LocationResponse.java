@@ -1,20 +1,22 @@
 package io.github.asmitmans.iotbackend.dto.location;
 
+import java.util.UUID;
+
 public class LocationResponse {
 
-    private Long id;
+    private UUID publicId;
     private String name;
-    private Long parentId;
+    private UUID parentPublicId;
 
     public LocationResponse() {
     }
 
-    public Long getId() {
-        return id;
+    public UUID getPublicId() {
+        return publicId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPublicId(UUID publicId) {
+        this.publicId = publicId;
     }
 
     public String getName() {
@@ -25,11 +27,11 @@ public class LocationResponse {
         this.name = name;
     }
 
-    public Long getParentId() {
-        return parentId;
+    public UUID getParentPublicId() {
+        return parentPublicId;
     }
 
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
+    public void setParentPublicId(UUID parentPublicId) {
+        this.parentPublicId = parentPublicId;
     }
 }

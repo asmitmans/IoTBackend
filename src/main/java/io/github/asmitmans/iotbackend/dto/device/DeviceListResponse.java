@@ -10,7 +10,7 @@ public class DeviceListResponse {
     private String status;
     private Long deviceModelId;
     private String deviceModelName;
-    private Long locationId;
+    private UUID locationId;
 
     public DeviceListResponse() {
     }
@@ -63,11 +63,11 @@ public class DeviceListResponse {
         this.deviceModelName = deviceModelName;
     }
 
-    public Long getLocationId() {
+    public UUID getLocationId() {
         return locationId;
     }
 
-    public void setLocationId(Long locationId) {
+    public void setLocationId(UUID locationId) {
         this.locationId = locationId;
     }
 }

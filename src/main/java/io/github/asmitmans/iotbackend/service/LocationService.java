@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,32 +29,31 @@ public class LocationService {
     @Transactional(readOnly = true)
     public List<LocationResponse> getAll(Long accountId) {
         return locationRepository.findByAccountId(accountId)
-                                 .stream()
-                                 .map(this::toResponse)
-                                 .collect(Collectors.toList());
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public LocationResponse getById(Long id, Long accountId) {
-        return toResponse(findOrThrow(id, accountId));
+    public LocationResponse getById(UUID publicId, Long accountId) {
+        return toResponse(findOrThrow(publicId, accountId));
     }
 
     @Transactional
     public LocationResponse create(LocationRequest request, Long accountId) {
-        Long parentId = request.getParentId();
+        Location parent = null;
+        if (request.getParentPublicId() != null) {
+            parent = findOrThrow(request.getParentPublicId(), accountId);
+        }
+        Long parentId = parent != null ? parent.getId() : null;
 
         if (locationRepository.existsByAccountIdAndParentIdAndName(accountId, parentId, request.getName())) {
             throw new ConflictException("Location with name '" + request.getName() +
-                                                "' already exists at this level");
+                    "' already exists at this level");
         }
 
         Account account = accountRepository.findById(accountId)
-                                           .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
-
-        Location parent = null;
-        if (parentId != null) {
-            parent = findOrThrow(parentId, accountId);
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
         Location entity = new Location();
         entity.setAccount(account);
@@ -64,12 +64,12 @@ public class LocationService {
     }
 
     @Transactional
-    public LocationResponse update(Long id, LocationRequest request, Long accountId) {
-        Location entity = findOrThrow(id, accountId);
+    public LocationResponse update(UUID publicId, LocationRequest request, Long accountId) {
+        Location entity = findOrThrow(publicId, accountId);
 
         Location parent = null;
-        if (request.getParentId() != null) {
-            parent = findOrThrow(request.getParentId(), accountId);
+        if (request.getParentPublicId() != null) {
+            parent = findOrThrow(request.getParentPublicId(), accountId);
         }
 
         entity.setParent(parent);
@@ -79,21 +79,21 @@ public class LocationService {
     }
 
     @Transactional
-    public void delete(Long id, Long accountId) {
-        Location entity = findOrThrow(id, accountId);
+    public void delete(UUID publicId, Long accountId) {
+        Location entity = findOrThrow(publicId, accountId);
         locationRepository.delete(entity);
     }
 
-    private Location findOrThrow(Long id, Long accountId) {
-        return locationRepository.findByIdAndAccountId(id, accountId)
-                                 .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+    private Location findOrThrow(UUID publicId, Long accountId) {
+        return locationRepository.findByPublicIdAndAccountId(publicId, accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
     }
 
     private LocationResponse toResponse(Location entity) {
         LocationResponse r = new LocationResponse();
-        r.setId(entity.getId());
+        r.setPublicId(entity.getPublicId());
         r.setName(entity.getName());
-        r.setParentId(entity.getParent() != null ? entity.getParent().getId() : null);
+        r.setParentPublicId(entity.getParent() != null ? entity.getParent().getPublicId() : null);
         return r;
     }
 

@@ -40,14 +40,14 @@ public class LocationController {
         return ResponseEntity.ok(locationService.getAll(accountResolver.resolveAccountId(principal, accountId)));
     }
 
-    @Operation(summary = "Get location by ID", security = @SecurityRequirement(name = "bearerAuth"))
-    @GetMapping("/{id}")
+    @Operation(summary = "Get location by public ID", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<LocationResponse> getById(
-            @PathVariable Long id,
+            @PathVariable UUID publicId,
             @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(locationService.getById(id, accountResolver.resolveAccountId(principal, accountId)));
+        return ResponseEntity.ok(locationService.getById(publicId, accountResolver.resolveAccountId(principal, accountId)));
     }
 
     @Operation(summary = "Create location", security = @SecurityRequirement(name = "bearerAuth"))
@@ -58,28 +58,28 @@ public class LocationController {
             @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(locationService.create(request, accountResolver.resolveAccountId(principal, accountId)));
+                .body(locationService.create(request, accountResolver.resolveAccountId(principal, accountId)));
     }
 
     @Operation(summary = "Update location", security = @SecurityRequirement(name = "bearerAuth"))
-    @PutMapping("/{id}")
+    @PutMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<LocationResponse> update(
-            @PathVariable Long id,
+            @PathVariable UUID publicId,
             @RequestBody @Valid LocationRequest request,
             @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        return ResponseEntity.ok(locationService.update(id, request, accountResolver.resolveAccountId(principal, accountId)));
+        return ResponseEntity.ok(locationService.update(publicId, request, accountResolver.resolveAccountId(principal, accountId)));
     }
 
     @Operation(summary = "Delete location", security = @SecurityRequirement(name = "bearerAuth"))
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{publicId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id,
+            @PathVariable UUID publicId,
             @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
-        locationService.delete(id, accountResolver.resolveAccountId(principal, accountId));
+        locationService.delete(publicId, accountResolver.resolveAccountId(principal, accountId));
         return ResponseEntity.noContent().build();
     }
 }

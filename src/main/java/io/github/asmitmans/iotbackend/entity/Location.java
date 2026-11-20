@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "location")
-public class Location extends AuditableEntity {
+public class Location extends PubliclyIdentifiableEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
