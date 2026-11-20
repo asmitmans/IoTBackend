@@ -23,17 +23,15 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final AccountRepository accountRepository;
     private final DeviceModelRepository deviceModelRepository;
-    private final LocationRepository locationRepository;
     private final ApiKeyService apiKeyService;
     private final Clock clock;
 
     private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    public DeviceService(DeviceRepository deviceRepository, AccountRepository accountRepository, DeviceModelRepository deviceModelRepository, LocationRepository locationRepository, ApiKeyService apiKeyService, Clock clock) {
+    public DeviceService(DeviceRepository deviceRepository, AccountRepository accountRepository, DeviceModelRepository deviceModelRepository, ApiKeyService apiKeyService, Clock clock) {
         this.deviceRepository = deviceRepository;
         this.accountRepository = accountRepository;
         this.deviceModelRepository = deviceModelRepository;
-        this.locationRepository = locationRepository;
         this.apiKeyService = apiKeyService;
         this.clock = clock;
     }
@@ -53,18 +51,11 @@ public class DeviceService {
         } while (deviceRepository.findBySerialNumber(serialNumber).isPresent());
 
         DeviceModel model = deviceModelRepository.findById(request.getDeviceModelId())
-                                                 .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
-
-        Location location = null;
-        if (request.getLocationId() != null) {
-            location = locationRepository.findById(request.getLocationId())
-                                         .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("Device model not found"));
 
         Device device = new Device();
         device.setSerialNumber(serialNumber);
         device.setDeviceModel(model);
-        device.setLocation(location);
         device.setStatus("UNCLAIMED");
 
         device = deviceRepository.save(device);

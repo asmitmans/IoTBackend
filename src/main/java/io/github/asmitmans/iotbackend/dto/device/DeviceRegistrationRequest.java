@@ -7,8 +7,6 @@ public class DeviceRegistrationRequest {
     @NotNull
     private Long deviceModelId;
 
-    private Long locationId;
-
     public DeviceRegistrationRequest() {
     }
 
@@ -18,13 +16,5 @@ public class DeviceRegistrationRequest {
 
     public void setDeviceModelId(Long deviceModelId) {
         this.deviceModelId = deviceModelId;
-    }
-
-    public Long getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationId(Long locationId) {
-        this.locationId = locationId;
     }
 }
