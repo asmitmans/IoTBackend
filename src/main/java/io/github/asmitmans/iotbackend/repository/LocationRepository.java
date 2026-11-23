@@ -15,4 +15,7 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
 
     boolean existsByAccountIdAndParentIdAndName(Long accountId, Long parentId, String name);
 
+    boolean existsByAccountIdAndParentIdAndNameAndIdNot(Long accountId, Long parentId, String name, Long id);
+
+    boolean existsByParentId(Long parentId);
 }

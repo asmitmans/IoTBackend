@@ -34,4 +34,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Page<Device> findByAccountId(Long accountId, Pageable pageable);
 
     Optional<Device> findByIdAndAccountId(Long id, Long accountId);
+
+    boolean existsByLocationId(Long locationId);
 }
