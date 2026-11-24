@@ -30,7 +30,7 @@ public class AccountController {
         this.accountMembershipService = accountMembershipService;
     }
 
-    @Operation(summary = "Create a new account", description = "Authenticated user must not already belong to an account. Creator becomes OWNER.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create a new account", description = "Creator becomes OWNER. The returned token has the new account as the active one.", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
     public ResponseEntity<AccountRegistrationResponse> create(
             @RequestBody @Valid AccountRegistrationRequest request,

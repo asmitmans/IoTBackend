@@ -24,6 +24,17 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         assertThat(mine.get(0).get("accountRole").asText()).isEqualTo("OWNER");
     }
 
+    @Test
+    void createSecondAccount_returnsATokenScopedToTheNewAccount() {
+        String token = loginToken(registerUser("alice"));
+        String farmToken = createAccount(token, "Farm").get("token").asText();
+        String homeToken = createAccount(token, "Home").get("token").asText();
+
+        assertThat(postJson("/api/v1/locations", homeToken, Map.of("name", "Barn")))
+                .hasStatus(HttpStatus.CREATED);
+        assertThat(body(get("/api/v1/locations", farmToken))).isEmpty();
+    }
+
     // ---------- invite and join ----------
 
     @Test

@@ -11,9 +11,6 @@ import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
-import io.github.asmitmans.iotbackend.security.JwtService;
-import io.github.asmitmans.iotbackend.security.UserPrincipal;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +23,16 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final AccountMembershipRepository accountMembershipRepository;
-    private final UserDetailsService userDetailsService;
-    private final JwtService jwtService;
+    private final ScopedTokenService scopedTokenService;
 
     public AccountService(AccountRepository accountRepository,
                           UserRepository userRepository,
                           AccountMembershipRepository accountMembershipRepository,
-                          UserDetailsService userDetailsService,
-                          JwtService jwtService) {
+                          ScopedTokenService scopedTokenService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
-        this.userDetailsService = userDetailsService;
-        this.jwtService = jwtService;
+        this.scopedTokenService = scopedTokenService;
     }
 
     @Transactional
@@ -55,8 +49,7 @@ public class AccountService {
 
         accountMembershipRepository.save(new AccountMembership(user, account, AccountRole.OWNER));
 
-        UserPrincipal refreshedPrincipal = (UserPrincipal) userDetailsService.loadUserByUsername(username);
-        String token = jwtService.generateToken(refreshedPrincipal);
+        String token = scopedTokenService.issue(user, account);
 
         return new AccountRegistrationResponse(account.getPublicId(), account.getName(), token);
     }

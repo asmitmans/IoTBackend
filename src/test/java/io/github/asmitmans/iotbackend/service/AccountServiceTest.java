@@ -11,15 +11,12 @@ import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.AccountMembershipRepository;
 import io.github.asmitmans.iotbackend.repository.AccountRepository;
 import io.github.asmitmans.iotbackend.repository.UserRepository;
-import io.github.asmitmans.iotbackend.security.JwtService;
-import io.github.asmitmans.iotbackend.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -46,10 +43,7 @@ public class AccountServiceTest {
     private AccountMembershipRepository accountMembershipRepository;
 
     @Mock
-    private UserDetailsService userDetailsService;
-
-    @Mock
-    private JwtService jwtService;
+    private ScopedTokenService scopedTokenService;
 
     private AccountService service;
 
@@ -58,7 +52,7 @@ public class AccountServiceTest {
     @BeforeEach
     void setUp() {
         service = new AccountService(accountRepository, userRepository, accountMembershipRepository,
-                userDetailsService, jwtService);
+                scopedTokenService);
 
         alice = new User();
         alice.setId(1);
@@ -71,7 +65,7 @@ public class AccountServiceTest {
     void create_withName_savesTheAccountAndAnOwnerMembership() {
         givenAliceExists();
         givenSaveReturnsTheSameAccount();
-        givenTokenForRefreshedPrincipal("TOKEN");
+        givenTokenIssued("TOKEN");
 
         AccountRegistrationResponse response = service.create("alice", requestNamed("Finca"));
 
@@ -89,13 +83,16 @@ public class AccountServiceTest {
     }
 
     @Test
-    void create_returnsATokenGeneratedFromTheRefreshedPrincipal() {
+    void create_returnsATokenScopedToTheNewAccount() {
         givenAliceExists();
         givenSaveReturnsTheSameAccount();
-        givenTokenForRefreshedPrincipal("TOKEN");
+        givenTokenIssued("TOKEN");
 
         AccountRegistrationResponse response = service.create("alice", requestNamed("Finca"));
 
+        ArgumentCaptor<Account> savedAccount = ArgumentCaptor.forClass(Account.class);
+        verify(accountRepository).save(savedAccount.capture());
+        verify(scopedTokenService).issue(alice, savedAccount.getValue());
         assertThat(response.getToken()).isEqualTo("TOKEN");
     }
 
@@ -103,7 +100,7 @@ public class AccountServiceTest {
     void create_withoutName_usesTheDefaultName() {
         givenAliceExists();
         givenSaveReturnsTheSameAccount();
-        givenTokenForRefreshedPrincipal("TOKEN");
+        givenTokenIssued("TOKEN");
 
         AccountRegistrationResponse response = service.create("alice", requestNamed(null));
 
@@ -114,7 +111,7 @@ public class AccountServiceTest {
     void create_withBlankName_usesTheDefaultName() {
         givenAliceExists();
         givenSaveReturnsTheSameAccount();
-        givenTokenForRefreshedPrincipal("TOKEN");
+        givenTokenIssued("TOKEN");
 
         AccountRegistrationResponse response = service.create("alice", requestNamed("   "));
 
@@ -129,7 +126,7 @@ public class AccountServiceTest {
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessage("User not found");
 
-        verifyNoInteractions(accountRepository, accountMembershipRepository, jwtService);
+        verifyNoInteractions(accountRepository, accountMembershipRepository, scopedTokenService);
     }
 
     // ---------- getMine() ----------
@@ -183,10 +180,8 @@ public class AccountServiceTest {
         when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
-    private void givenTokenForRefreshedPrincipal(String token) {
-        UserPrincipal principal = new UserPrincipal("alice", "pw", true, null, List.of());
-        when(userDetailsService.loadUserByUsername("alice")).thenReturn(principal);
-        when(jwtService.generateToken(principal)).thenReturn(token);
+    private void givenTokenIssued(String token) {
+        when(scopedTokenService.issue(eq(alice), any(Account.class))).thenReturn(token);
     }
 
     private AccountRegistrationRequest requestNamed(String name) {
