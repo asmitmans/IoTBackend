@@ -58,6 +58,21 @@ public class AccountFlowIT extends AbstractIntegrationTest {
                 .hasStatus(HttpStatus.FORBIDDEN);
     }
 
+    @Test
+    void join_afterFiveInvalidCodes_returns429EvenWithAValidCode() {
+        Owned farm = accountOwnedBy("alice");
+        String validCode = joinCode(farm);
+        String bobToken = loginToken(registerUser("bob"));
+
+        for (int i = 0; i < 5; i++) {
+            assertThat(postJson("/api/v1/accounts/join", bobToken, Map.of("joinCode", "WRONGCODE1234")))
+                    .hasStatus(HttpStatus.FORBIDDEN);
+        }
+
+        assertThat(postJson("/api/v1/accounts/join", bobToken, Map.of("joinCode", validCode)))
+                .hasStatus(HttpStatus.TOO_MANY_REQUESTS);
+    }
+
     // ---------- switch ----------
 
     @Test
