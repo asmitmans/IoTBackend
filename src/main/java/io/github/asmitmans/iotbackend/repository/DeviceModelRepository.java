@@ -9,4 +9,8 @@ import java.util.Optional;
 @Repository
 public interface DeviceModelRepository extends JpaRepository<DeviceModel, Long> {
     Optional<DeviceModel> findByName(String name);
+
+    boolean existsByMeasurementTypesId(Long measurementTypeId);
+
+    boolean existsByCommandTypesId(Long commandTypeId);
 }

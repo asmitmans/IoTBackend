@@ -194,6 +194,20 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
                 .hasStatus(HttpStatus.NOT_FOUND);
     }
 
+    // ---------- catalog ----------
+
+    @Test
+    void deleteDeviceModel_notInUse_returns204() {
+        assertThat(delete("/api/v1/device-models/" + modelId, adminToken)).hasStatus(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void deleteDeviceModel_usedByADevice_returns409() {
+        registerDevice(adminToken, modelId);
+
+        assertThat(delete("/api/v1/device-models/" + modelId, adminToken)).hasStatus(HttpStatus.CONFLICT);
+    }
+
     // ---------- helpers ----------
 
     /** Registers, enrolls into the account and claims a device; returns its publicId. */

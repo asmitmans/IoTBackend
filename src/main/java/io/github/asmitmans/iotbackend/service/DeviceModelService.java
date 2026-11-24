@@ -12,6 +12,7 @@ import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.CommandTypeRepository;
 import io.github.asmitmans.iotbackend.repository.DeviceModelRepository;
+import io.github.asmitmans.iotbackend.repository.DeviceRepository;
 import io.github.asmitmans.iotbackend.repository.MeasurementTypeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +28,13 @@ public class DeviceModelService {
     private final DeviceModelRepository deviceModelRepository;
     private final MeasurementTypeRepository measurementTypeRepository;
     private final CommandTypeRepository commandTypeRepository;
+    private final DeviceRepository deviceRepository;
 
-    public DeviceModelService(DeviceModelRepository deviceModelRepository, MeasurementTypeRepository measurementTypeRepository, CommandTypeRepository commandTypeRepository) {
+    public DeviceModelService(DeviceModelRepository deviceModelRepository, MeasurementTypeRepository measurementTypeRepository, CommandTypeRepository commandTypeRepository, DeviceRepository deviceRepository) {
         this.deviceModelRepository = deviceModelRepository;
         this.measurementTypeRepository = measurementTypeRepository;
         this.commandTypeRepository = commandTypeRepository;
+        this.deviceRepository = deviceRepository;
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +76,9 @@ public class DeviceModelService {
     @Transactional
     public void delete(Long id) {
         DeviceModel entity = findOrThrow(id);
+        if (deviceRepository.existsByDeviceModelId(entity.getId())) {
+            throw new ConflictException("Device model is used by devices; reassign them first");
+        }
         deviceModelRepository.delete(entity);
     }
 

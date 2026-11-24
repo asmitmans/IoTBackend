@@ -36,4 +36,6 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findByIdAndAccountId(Long id, Long accountId);
 
     boolean existsByLocationId(Long locationId);
+
+    boolean existsByDeviceModelId(Long deviceModelId);
 }

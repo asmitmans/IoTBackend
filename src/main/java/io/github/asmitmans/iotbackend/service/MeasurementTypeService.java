@@ -5,6 +5,7 @@ import io.github.asmitmans.iotbackend.dto.measurementtype.MeasurementTypeRespons
 import io.github.asmitmans.iotbackend.entity.MeasurementType;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
+import io.github.asmitmans.iotbackend.repository.DeviceModelRepository;
 import io.github.asmitmans.iotbackend.repository.MeasurementTypeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class MeasurementTypeService {
 
     private final MeasurementTypeRepository measurementTypeRepository;
+    private final DeviceModelRepository deviceModelRepository;
 
-    public MeasurementTypeService(MeasurementTypeRepository measurementTypeRepository) {
+    public MeasurementTypeService(MeasurementTypeRepository measurementTypeRepository, DeviceModelRepository deviceModelRepository) {
         this.measurementTypeRepository = measurementTypeRepository;
+        this.deviceModelRepository = deviceModelRepository;
     }
 
     @Transactional(readOnly = true)
@@ -56,6 +59,9 @@ public class MeasurementTypeService {
     @Transactional
     public void delete(Long id) {
         MeasurementType entity = findOrThrow(id);
+        if (deviceModelRepository.existsByMeasurementTypesId(entity.getId())) {
+            throw new ConflictException("Measurement type is used by device models; remove it from them first");
+        }
         measurementTypeRepository.delete(entity);
     }
 

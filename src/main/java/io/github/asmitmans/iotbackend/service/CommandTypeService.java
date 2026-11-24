@@ -6,6 +6,7 @@ import io.github.asmitmans.iotbackend.entity.CommandType;
 import io.github.asmitmans.iotbackend.exception.ConflictException;
 import io.github.asmitmans.iotbackend.exception.ResourceNotFoundException;
 import io.github.asmitmans.iotbackend.repository.CommandTypeRepository;
+import io.github.asmitmans.iotbackend.repository.DeviceModelRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class CommandTypeService {
 
     private final CommandTypeRepository commandTypeRepository;
+    private final DeviceModelRepository deviceModelRepository;
 
-    public CommandTypeService(CommandTypeRepository commandTypeRepository) {
+    public CommandTypeService(CommandTypeRepository commandTypeRepository, DeviceModelRepository deviceModelRepository) {
         this.commandTypeRepository = commandTypeRepository;
+        this.deviceModelRepository = deviceModelRepository;
     }
 
     @Transactional(readOnly = true)
@@ -56,6 +59,9 @@ public class CommandTypeService {
     @Transactional
     public void delete(Long id) {
         CommandType entity = findOrThrow(id);
+        if (deviceModelRepository.existsByCommandTypesId(entity.getId())) {
+            throw new ConflictException("Command type is used by device models; remove it from them first");
+        }
         commandTypeRepository.delete(entity);
     }
 
