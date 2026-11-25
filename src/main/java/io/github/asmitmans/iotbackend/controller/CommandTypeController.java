@@ -19,45 +19,47 @@ import java.util.List;
 @RequestMapping("/api/v1/command-types")
 public class CommandTypeController {
 
-  private final CommandTypeService commandTypeService;
+    private final CommandTypeService commandTypeService;
 
-  public CommandTypeController(CommandTypeService commandTypeService) {
-    this.commandTypeService = commandTypeService;
-  }
+    public CommandTypeController(CommandTypeService commandTypeService) {
+        this.commandTypeService = commandTypeService;
+    }
 
-  @Operation(summary = "List all command types", security = @SecurityRequirement(name = "bearerAuth"))
-  @GetMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-  public ResponseEntity<List<CommandTypeResponse>> getAll() {
-    return ResponseEntity.ok(commandTypeService.getAll());
-  }
+    @Operation(summary = "List all command types", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<CommandTypeResponse>> getAll() {
+        return ResponseEntity.ok(commandTypeService.getAll());
+    }
 
-  @Operation(summary = "Get command type by ID", security = @SecurityRequirement(name = "bearerAuth"))
-  @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-  public ResponseEntity<CommandTypeResponse> getById(@PathVariable Long id) {
-    return ResponseEntity.ok(commandTypeService.getById(id));
-  }
+    @Operation(summary = "Get command type by ID", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<CommandTypeResponse> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(commandTypeService.getById(id));
+    }
 
-  @Operation(summary = "Create command type", security = @SecurityRequirement(name = "bearerAuth"))
-  @PostMapping
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<CommandTypeResponse> create(@RequestBody @Valid CommandTypeRequest request) {
-    return ResponseEntity.status(HttpStatus.CREATED).body(commandTypeService.create(request));
-  }
+    @Operation(summary = "Create command type", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CommandTypeResponse> create(@RequestBody @Valid CommandTypeRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(commandTypeService.create(request));
+    }
 
-  @Operation(summary = "Update command type", security = @SecurityRequirement(name = "bearerAuth"))
-  @PutMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<CommandTypeResponse> update(@PathVariable Long id, @RequestBody @Valid CommandTypeRequest request) {
-    return ResponseEntity.ok(commandTypeService.update(id, request));
-  }
+    @Operation(summary = "Update command type", security = @SecurityRequirement(name = "bearerAuth"))
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CommandTypeResponse> update(@PathVariable Long id,
+            @RequestBody @Valid CommandTypeRequest request) {
+        return ResponseEntity.ok(commandTypeService.update(id, request));
+    }
 
-  @Operation(summary = "Delete command type", security = @SecurityRequirement(name = "bearerAuth"))
-  @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
-    commandTypeService.delete(id);
-    return ResponseEntity.noContent().build();
-  }
+    @Operation(summary = "Delete command type", security = @SecurityRequirement(name = "bearerAuth"))
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        commandTypeService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

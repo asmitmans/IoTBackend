@@ -25,7 +25,9 @@ import static org.mockito.Mockito.*;
 public class AccountResolverTest {
 
     private static final UUID ACCOUNT_PUBLIC_ID = UUID.randomUUID();
+
     private static final Long ACCOUNT_ID = 10L;
+
     private static final Integer USER_ID = 7;
 
     @Mock
@@ -58,9 +60,8 @@ public class AccountResolverTest {
 
     @Test
     void resolveAccountId_asAdminWithoutRequestedAccount_throwsIllegalArgument() {
-        assertThatThrownBy(() -> resolver.resolveAccountId(admin(), null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Admin must provide accountId");
+        assertThatThrownBy(() -> resolver.resolveAccountId(admin(), null)).isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Admin must provide accountId");
 
         verifyNoInteractions(accountRepository);
     }
@@ -70,8 +71,8 @@ public class AccountResolverTest {
         when(accountRepository.findByPublicId(ACCOUNT_PUBLIC_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> resolver.resolveAccountId(admin(), ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Account not found");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Account not found");
     }
 
     // ---------- resolveAccountId(): user ----------
@@ -107,15 +108,14 @@ public class AccountResolverTest {
         when(accountMembershipRepository.existsByUserIdAndAccountId(USER_ID, ACCOUNT_ID)).thenReturn(false);
 
         assertThatThrownBy(() -> resolver.resolveAccountId(user(ACCOUNT_PUBLIC_ID), null))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User is no longer a member of this account");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User is no longer a member of this account");
     }
 
     @Test
     void resolveAccountId_asUserWithoutAccountInToken_throwsAccessDenied() {
-        assertThatThrownBy(() -> resolver.resolveAccountId(user(null), null))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User has no associated account");
+        assertThatThrownBy(() -> resolver.resolveAccountId(user(null), null)).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User has no associated account");
 
         verifyNoInteractions(accountRepository, userRepository, accountMembershipRepository);
     }
@@ -125,8 +125,8 @@ public class AccountResolverTest {
         when(accountRepository.findByPublicId(ACCOUNT_PUBLIC_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> resolver.resolveAccountId(user(ACCOUNT_PUBLIC_ID), null))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Account not found");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Account not found");
     }
 
     @Test
@@ -135,8 +135,8 @@ public class AccountResolverTest {
         when(userRepository.findByUsername("alice")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> resolver.resolveAccountId(user(ACCOUNT_PUBLIC_ID), null))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User not found");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User not found");
     }
 
     // ---------- resolveOwnAccountIdOrNull() ----------
@@ -164,8 +164,8 @@ public class AccountResolverTest {
         when(accountMembershipRepository.existsByUserIdAndAccountId(USER_ID, ACCOUNT_ID)).thenReturn(false);
 
         assertThatThrownBy(() -> resolver.resolveOwnAccountIdOrNull(user(ACCOUNT_PUBLIC_ID)))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User is no longer a member of this account");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User is no longer a member of this account");
     }
 
     // ---------- helpers ----------
@@ -190,4 +190,5 @@ public class AccountResolverTest {
     private UserPrincipal user(UUID accountId) {
         return new UserPrincipal("alice", "pw", true, accountId, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
+
 }

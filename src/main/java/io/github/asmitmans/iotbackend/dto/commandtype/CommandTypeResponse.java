@@ -3,7 +3,9 @@ package io.github.asmitmans.iotbackend.dto.commandtype;
 public class CommandTypeResponse {
 
     private Long id;
+
     private String name;
+
     private String description;
 
     public CommandTypeResponse() {
@@ -32,4 +34,5 @@ public class CommandTypeResponse {
     public void setDescription(String description) {
         this.description = description;
     }
+
 }

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class MeasurementService {
 
     private final MeasurementRepository measurementRepository;
+
     private final DeviceRepository deviceRepository;
 
     public MeasurementService(MeasurementRepository measurementRepository, DeviceRepository deviceRepository) {
@@ -24,27 +25,23 @@ public class MeasurementService {
         this.deviceRepository = deviceRepository;
     }
 
-    public List<MeasurementResponse> getLatest(List<Long> deviceIds,
-                                               Long accountId) {
+    public List<MeasurementResponse> getLatest(List<Long> deviceIds, Long accountId) {
         List<Long> ids = resolveDeviceIds(deviceIds, accountId);
         return ids.stream()
-                  .map(id -> measurementRepository.findLatestByDeviceId(id))
-                  .filter(opt -> opt.isPresent())
-                  .map(opt -> toResponse(opt.get()))
-                  .collect(Collectors.toList());
+            .map(id -> measurementRepository.findLatestByDeviceId(id))
+            .filter(opt -> opt.isPresent())
+            .map(opt -> toResponse(opt.get()))
+            .collect(Collectors.toList());
     }
 
     private List<Long> resolveDeviceIds(List<Long> deviceIds, Long accountId) {
         if (deviceIds != null && !deviceIds.isEmpty()) {
             return deviceRepository.findByIdInAndAccountId(deviceIds, accountId)
-                                   .stream()
-                                   .map(d -> d.getId())
-                                   .collect(Collectors.toList());
+                .stream()
+                .map(d -> d.getId())
+                .collect(Collectors.toList());
         }
-        return deviceRepository.findByAccountId(accountId)
-                               .stream()
-                               .map(d -> d.getId())
-                               .collect(Collectors.toList());
+        return deviceRepository.findByAccountId(accountId).stream().map(d -> d.getId()).collect(Collectors.toList());
     }
 
     private MeasurementResponse toResponse(Measurement m) {
@@ -57,19 +54,14 @@ public class MeasurementService {
         return r;
     }
 
-    public Page<MeasurementResponse> getByTimeRange(
-            Long deviceId,
-            Instant from,
-            Instant to,
-            int page,
-            int size,
+    public Page<MeasurementResponse> getByTimeRange(Long deviceId, Instant from, Instant to, int page, int size,
             Long accountId) {
 
         int safeSize = Math.min(size, 500);
         Pageable pageable = PageRequest.of(page, safeSize);
 
-        return measurementRepository
-                .findByDeviceIdAndTimeRange(deviceId, accountId, from, to, pageable)
-                .map(this::toResponse);
+        return measurementRepository.findByDeviceIdAndTimeRange(deviceId, accountId, from, to, pageable)
+            .map(this::toResponse);
     }
+
 }

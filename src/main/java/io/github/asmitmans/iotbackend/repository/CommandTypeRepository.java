@@ -9,7 +9,10 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface CommandTypeRepository extends JpaRepository<CommandType,Long> {
+public interface CommandTypeRepository extends JpaRepository<CommandType, Long> {
+
     Optional<CommandType> findByName(String name);
+
     List<CommandType> findByIdIn(Set<Long> ids);
+
 }

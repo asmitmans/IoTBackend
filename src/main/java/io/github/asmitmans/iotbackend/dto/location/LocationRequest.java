@@ -29,4 +29,5 @@ public class LocationRequest {
     public void setParentPublicId(UUID parentPublicId) {
         this.parentPublicId = parentPublicId;
     }
+
 }

@@ -21,18 +21,20 @@ import java.util.UUID;
 public class AccountMembershipService {
 
     private final AccountRepository accountRepository;
+
     private final UserRepository userRepository;
+
     private final AccountMembershipRepository accountMembershipRepository;
+
     private final JoinCodeService joinCodeService;
+
     private final JoinAttemptService joinAttemptService;
+
     private final ScopedTokenService scopedTokenService;
 
-    public AccountMembershipService(AccountRepository accountRepository,
-                                    UserRepository userRepository,
-                                    AccountMembershipRepository accountMembershipRepository,
-                                    JoinCodeService joinCodeService,
-                                    JoinAttemptService joinAttemptService,
-                                    ScopedTokenService scopedTokenService) {
+    public AccountMembershipService(AccountRepository accountRepository, UserRepository userRepository,
+            AccountMembershipRepository accountMembershipRepository, JoinCodeService joinCodeService,
+            JoinAttemptService joinAttemptService, ScopedTokenService scopedTokenService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
@@ -51,7 +53,7 @@ public class AccountMembershipService {
     @Transactional
     public JoinCodeResponse generateJoinCode(String username, UUID accountPublicId) {
         Account account = requireOwner(username, accountPublicId, "Only the account OWNER can generate a join code")
-                .account();
+            .account();
 
         JoinCodeIssuance issuance = joinCodeService.issue();
 
@@ -68,12 +70,13 @@ public class AccountMembershipService {
         joinAttemptService.checkAllowed(username);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Account account;
         try {
             account = joinCodeService.resolveAndVerify(joinCode);
-        } catch (AccessDeniedException | ConflictException e) {
+        }
+        catch (AccessDeniedException | ConflictException e) {
             joinAttemptService.recordFailure(username);
             throw e;
         }
@@ -94,7 +97,8 @@ public class AccountMembershipService {
         AccountMembership membership = ctx.membership();
 
         if (membership.getAccountRole() == AccountRole.OWNER) {
-            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(ctx.account().getId(), AccountRole.OWNER);
+            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(ctx.account().getId(),
+                    AccountRole.OWNER);
             if (ownerCount <= 1) {
                 throw new ConflictException("You are the only OWNER. Promote another member before leaving.");
             }
@@ -106,12 +110,13 @@ public class AccountMembershipService {
     @Transactional
     public void removeMember(String requesterUsername, UUID accountPublicId, String targetUsername) {
         Account account = requireOwner(requesterUsername, accountPublicId, "Only the account OWNER can remove members")
-                .account();
+            .account();
 
         AccountMembership targetMembership = requireTargetMembership(targetUsername, account);
 
         if (targetMembership.getAccountRole() == AccountRole.OWNER) {
-            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(account.getId(), AccountRole.OWNER);
+            long ownerCount = accountMembershipRepository.countByAccountIdAndAccountRole(account.getId(),
+                    AccountRole.OWNER);
             if (ownerCount <= 1) {
                 throw new ConflictException("Cannot remove the only OWNER of an account");
             }
@@ -123,7 +128,7 @@ public class AccountMembershipService {
     @Transactional
     public void promote(String requesterUsername, UUID accountPublicId, String targetUsername) {
         Account account = requireOwner(requesterUsername, accountPublicId, "Only the account OWNER can promote members")
-                .account();
+            .account();
 
         AccountMembership targetMembership = requireTargetMembership(targetUsername, account);
 
@@ -140,13 +145,14 @@ public class AccountMembershipService {
 
     private MemberContext loadMemberContext(String username, UUID accountPublicId) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Account account = accountRepository.findByPublicId(accountPublicId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
 
-        AccountMembership membership = accountMembershipRepository.findByUserIdAndAccountId(user.getId(), account.getId())
-                .orElseThrow(() -> new AccessDeniedException("User is not a member of this account"));
+        AccountMembership membership = accountMembershipRepository
+            .findByUserIdAndAccountId(user.getId(), account.getId())
+            .orElseThrow(() -> new AccessDeniedException("User is not a member of this account"));
 
         return new MemberContext(user, account, membership);
     }
@@ -163,10 +169,10 @@ public class AccountMembershipService {
 
     private AccountMembership requireTargetMembership(String targetUsername, Account account) {
         User target = userRepository.findByUsername(targetUsername)
-                .orElseThrow(() -> new ResourceNotFoundException("Target user not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Target user not found"));
 
         return accountMembershipRepository.findByUserIdAndAccountId(target.getId(), account.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Target user is not a member of this account"));
+            .orElseThrow(() -> new ResourceNotFoundException("Target user is not a member of this account"));
     }
 
     private AccountRegistrationResponse buildScopedResponse(User user, Account account) {
@@ -174,4 +180,5 @@ public class AccountMembershipService {
 
         return new AccountRegistrationResponse(account.getPublicId(), account.getName(), token);
     }
+
 }

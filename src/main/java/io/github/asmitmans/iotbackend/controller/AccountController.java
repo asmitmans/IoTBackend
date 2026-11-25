@@ -23,6 +23,7 @@ import java.util.UUID;
 public class AccountController {
 
     private final AccountService accountService;
+
     private final AccountMembershipService accountMembershipService;
 
     public AccountController(AccountService accountService, AccountMembershipService accountMembershipService) {
@@ -30,71 +31,76 @@ public class AccountController {
         this.accountMembershipService = accountMembershipService;
     }
 
-    @Operation(summary = "Create a new account", description = "Creator becomes OWNER. The returned token has the new account as the active one.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create a new account",
+            description = "Creator becomes OWNER. The returned token has the new account as the active one.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping
-    public ResponseEntity<AccountRegistrationResponse> create(
-            @RequestBody @Valid AccountRegistrationRequest request,
+    public ResponseEntity<AccountRegistrationResponse> create(@RequestBody @Valid AccountRegistrationRequest request,
             Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(accountService.create(authentication.getName(), request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountService.create(authentication.getName(), request));
     }
 
-    @Operation(summary = "List my accounts", description = "Returns every account the authenticated user has a membership in, with their role in each.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "List my accounts",
+            description = "Returns every account the authenticated user has a membership in, with their role in each.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/mine")
     public ResponseEntity<List<AccountMembershipResponse>> getMine(Authentication authentication) {
         return ResponseEntity.ok(accountService.getMine(authentication.getName()));
     }
 
-    @Operation(summary = "Switch active account", description = "Issues a new JWT scoped to the given account. Requires an existing membership — does not require re-entering the password.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Switch active account",
+            description = "Issues a new JWT scoped to the given account. Requires an existing membership — does not require re-entering the password.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{accountId}/switch")
-    public ResponseEntity<AccountRegistrationResponse> switchAccount(
-            @PathVariable UUID accountId,
+    public ResponseEntity<AccountRegistrationResponse> switchAccount(@PathVariable UUID accountId,
             Authentication authentication) {
         return ResponseEntity.ok(accountMembershipService.switchAccount(authentication.getName(), accountId));
     }
 
-    @Operation(summary = "Generate/rotate join code", description = "OWNER only. Returns the plaintext code once — not retrievable again. Valid 24h.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Generate/rotate join code",
+            description = "OWNER only. Returns the plaintext code once — not retrievable again. Valid 24h.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{accountId}/join-code")
-    public ResponseEntity<JoinCodeResponse> generateJoinCode(
-            @PathVariable UUID accountId,
+    public ResponseEntity<JoinCodeResponse> generateJoinCode(@PathVariable UUID accountId,
             Authentication authentication) {
         return ResponseEntity.ok(accountMembershipService.generateJoinCode(authentication.getName(), accountId));
     }
 
-    @Operation(summary = "Join an account using its join code", description = "No accountId needed — the code alone identifies the account. Joiner is added as MEMBER.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Join an account using its join code",
+            description = "No accountId needed — the code alone identifies the account. Joiner is added as MEMBER.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/join")
-    public ResponseEntity<AccountRegistrationResponse> join(
-            @RequestBody @Valid AccountJoinRequest request,
+    public ResponseEntity<AccountRegistrationResponse> join(@RequestBody @Valid AccountJoinRequest request,
             Authentication authentication) {
         return ResponseEntity.ok(accountMembershipService.join(authentication.getName(), request.getJoinCode()));
     }
 
-    @Operation(summary = "Leave an account", description = "Self-removal. Blocked if you are the only OWNER — promote another member first.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Leave an account",
+            description = "Self-removal. Blocked if you are the only OWNER — promote another member first.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{accountId}/leave")
-    public ResponseEntity<Void> leave(
-            @PathVariable UUID accountId,
-            Authentication authentication) {
+    public ResponseEntity<Void> leave(@PathVariable UUID accountId, Authentication authentication) {
         accountMembershipService.leave(authentication.getName(), accountId);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Remove a member from the account", description = "OWNER only. Cannot remove the only OWNER (prevents orphaned accounts).", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Remove a member from the account",
+            description = "OWNER only. Cannot remove the only OWNER (prevents orphaned accounts).",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{accountId}/members/{username}")
-    public ResponseEntity<Void> removeMember(
-            @PathVariable UUID accountId,
-            @PathVariable String username,
+    public ResponseEntity<Void> removeMember(@PathVariable UUID accountId, @PathVariable String username,
             Authentication authentication) {
         accountMembershipService.removeMember(authentication.getName(), accountId, username);
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Promote a member to OWNER", description = "OWNER only.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Promote a member to OWNER", description = "OWNER only.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{accountId}/members/{username}/promote")
-    public ResponseEntity<Void> promote(
-            @PathVariable UUID accountId,
-            @PathVariable String username,
+    public ResponseEntity<Void> promote(@PathVariable UUID accountId, @PathVariable String username,
             Authentication authentication) {
         accountMembershipService.promote(authentication.getName(), accountId, username);
         return ResponseEntity.noContent().build();
     }
+
 }

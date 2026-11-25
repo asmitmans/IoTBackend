@@ -40,8 +40,8 @@ public class DeviceModelServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DeviceModelService(deviceModelRepository, measurementTypeRepository,
-                commandTypeRepository, deviceRepository);
+        service = new DeviceModelService(deviceModelRepository, measurementTypeRepository, commandTypeRepository,
+                deviceRepository);
         entity = new DeviceModel();
         entity.setId(ID);
     }
@@ -62,10 +62,10 @@ public class DeviceModelServiceTest {
         when(deviceModelRepository.findById(ID)).thenReturn(Optional.of(entity));
         when(deviceRepository.existsByDeviceModelId(ID)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.delete(ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Device model is used by devices; reassign them first");
+        assertThatThrownBy(() -> service.delete(ID)).isInstanceOf(ConflictException.class)
+            .hasMessage("Device model is used by devices; reassign them first");
 
         verify(deviceModelRepository, never()).delete(any());
     }
+
 }

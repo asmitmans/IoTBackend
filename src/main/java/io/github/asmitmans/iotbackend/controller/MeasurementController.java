@@ -26,6 +26,7 @@ import java.util.UUID;
 public class MeasurementController {
 
     private final MeasurementService measurementService;
+
     private final AccountResolver accountResolver;
 
     public MeasurementController(MeasurementService measurementService, AccountResolver accountResolver) {
@@ -33,31 +34,24 @@ public class MeasurementController {
         this.accountResolver = accountResolver;
     }
 
-    @Operation(summary = "Get latest measurement per device",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get latest measurement per device", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/latest")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<MeasurementResponse>> getLatest(
-            @RequestParam(required = false) List<Long> deviceIds,
-            @RequestParam(required = false) UUID accountId,
-            @AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<List<MeasurementResponse>> getLatest(@RequestParam(required = false) List<Long> deviceIds,
+            @RequestParam(required = false) UUID accountId, @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
         return ResponseEntity.ok(measurementService.getLatest(deviceIds, effectiveAccountId));
     }
 
-    @Operation(summary = "Query measurements by time range",
-            security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Query measurements by time range", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Page<MeasurementResponse>> getByTimeRange(
-            @RequestParam Long deviceId,
-            @RequestParam Instant from,
-            @RequestParam Instant to,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size,
-            @RequestParam(required = false) UUID accountId,
+    public ResponseEntity<Page<MeasurementResponse>> getByTimeRange(@RequestParam Long deviceId,
+            @RequestParam Instant from, @RequestParam Instant to, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size, @RequestParam(required = false) UUID accountId,
             @AuthenticationPrincipal UserPrincipal principal) {
         Long effectiveAccountId = accountResolver.resolveAccountId(principal, accountId);
         return ResponseEntity.ok(measurementService.getByTimeRange(deviceId, from, to, page, size, effectiveAccountId));
     }
+
 }

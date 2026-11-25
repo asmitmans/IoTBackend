@@ -15,14 +15,15 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
+
     private final UserDetailsService userDetailsService;
+
     private final JwtService jwtService;
+
     private final LoginAttemptService loginAttemptService;
 
-    public AuthService(AuthenticationManager authenticationManager,
-                       UserDetailsService userDetailsService,
-                       JwtService jwtService,
-                       LoginAttemptService loginAttemptService) {
+    public AuthService(AuthenticationManager authenticationManager, UserDetailsService userDetailsService,
+            JwtService jwtService, LoginAttemptService loginAttemptService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
@@ -33,12 +34,10 @@ public class AuthService {
         loginAttemptService.checkAllowed(request.username());
 
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.username(), request.password()
-                    )
-            );
-        } catch (BadCredentialsException e) {
+            authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        }
+        catch (BadCredentialsException e) {
             loginAttemptService.recordFailure(request.username());
             throw e;
         }
@@ -50,4 +49,5 @@ public class AuthService {
 
         return new LoginResponse(token, principal.getUsername(), principal.getAccountId());
     }
+
 }

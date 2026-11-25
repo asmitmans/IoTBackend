@@ -17,19 +17,18 @@ import java.util.stream.Collectors;
 public class CommandTypeService {
 
     private final CommandTypeRepository commandTypeRepository;
+
     private final DeviceModelRepository deviceModelRepository;
 
-    public CommandTypeService(CommandTypeRepository commandTypeRepository, DeviceModelRepository deviceModelRepository) {
+    public CommandTypeService(CommandTypeRepository commandTypeRepository,
+            DeviceModelRepository deviceModelRepository) {
         this.commandTypeRepository = commandTypeRepository;
         this.deviceModelRepository = deviceModelRepository;
     }
 
     @Transactional(readOnly = true)
     public List<CommandTypeResponse> getAll() {
-        return commandTypeRepository.findAll()
-                                    .stream()
-                                    .map(this::toResponse)
-                                    .collect(Collectors.toList());
+        return commandTypeRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -39,10 +38,9 @@ public class CommandTypeService {
 
     @Transactional
     public CommandTypeResponse create(CommandTypeRequest request) {
-        commandTypeRepository.findByName(request.getName())
-                             .ifPresent(c -> {
-                                 throw new ConflictException("CommandType with name '" + request.getName() + "' already exists");
-                             });
+        commandTypeRepository.findByName(request.getName()).ifPresent(c -> {
+            throw new ConflictException("CommandType with name '" + request.getName() + "' already exists");
+        });
 
         CommandType entity = new CommandType();
         applyRequest(entity, request);
@@ -72,7 +70,7 @@ public class CommandTypeService {
 
     private CommandType findOrThrow(Long id) {
         return commandTypeRepository.findById(id)
-                                    .orElseThrow(() -> new ResourceNotFoundException("CommandType not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("CommandType not found"));
     }
 
     private CommandTypeResponse toResponse(CommandType entity) {
@@ -82,4 +80,5 @@ public class CommandTypeService {
         r.setDescription(entity.getDescription());
         return r;
     }
+
 }

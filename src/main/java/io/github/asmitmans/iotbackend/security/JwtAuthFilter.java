@@ -28,9 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -42,28 +40,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        if (jwtService.isValid(token) &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (jwtService.isValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             String username = jwtService.extractUsername(token);
             UUID accountId = jwtService.extractAccountId(token);
             String authoritiesStr = jwtService.extractAuthorities(token);
 
-            List<SimpleGrantedAuthority> authorities =
-                    Arrays.stream(authoritiesStr.split(","))
-                          .map(SimpleGrantedAuthority::new)
-                          .collect(Collectors.toList());
+            List<SimpleGrantedAuthority> authorities = Arrays.stream(authoritiesStr.split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
 
-            UserPrincipal principal = new UserPrincipal(
-                    username, null, true, accountId, authorities);
+            UserPrincipal principal = new UserPrincipal(username, null, true, accountId, authorities);
 
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            principal, null, authorities);
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
+                    authorities);
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 
         filterChain.doFilter(request, response);
     }
+
 }

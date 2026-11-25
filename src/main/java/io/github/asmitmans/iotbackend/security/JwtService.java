@@ -25,19 +25,19 @@ public class JwtService {
 
     public String generateToken(UserPrincipal principal) {
         long now = System.currentTimeMillis();
-        String authorities = principal.getAuthorities().stream()
-                                      .map(GrantedAuthority::getAuthority)
-                                      .collect(Collectors.joining(","));
+        String authorities = principal.getAuthorities()
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                   .subject(principal.getUsername())
-                   .claim("accountId", principal.getAccountId() != null
-                           ? principal.getAccountId().toString() : null)
-                   .claim("authorities", authorities)
-                   .issuedAt(new Date(now))
-                   .expiration(new Date(now + props.expirationMs()))
-                   .signWith(key())
-                   .compact();
+            .subject(principal.getUsername())
+            .claim("accountId", principal.getAccountId() != null ? principal.getAccountId().toString() : null)
+            .claim("authorities", authorities)
+            .issuedAt(new Date(now))
+            .expiration(new Date(now + props.expirationMs()))
+            .signWith(key())
+            .compact();
     }
 
     public String extractUsername(String token) {
@@ -57,20 +57,18 @@ public class JwtService {
         try {
             Claims claims = parseClaims(token);
             return !claims.getExpiration().before(new Date());
-        } catch (JwtException | IllegalArgumentException e) {
+        }
+        catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
     private Claims parseClaims(String token) {
-        return Jwts.parser()
-                   .verifyWith(key())
-                   .build()
-                   .parseSignedClaims(token)
-                   .getPayload();
+        return Jwts.parser().verifyWith(key()).build().parseSignedClaims(token).getPayload();
     }
 
     private SecretKey key() {
         return Keys.hmacShaKeyFor(props.secret().getBytes(StandardCharsets.UTF_8));
     }
+
 }

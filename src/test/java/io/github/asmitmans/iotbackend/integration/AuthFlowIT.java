@@ -17,13 +17,13 @@ public class AuthFlowIT extends AbstractIntegrationTest {
         String username = registerUser("alice");
 
         assertThat(postJson("/api/v1/users", null, Map.of("username", username, "password", PASSWORD)))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
     void register_withTooShortPassword_returns400() {
         assertThat(postJson("/api/v1/users", null, Map.of("username", uniqueUsername("alice"), "password", "short")))
-                .hasStatus(HttpStatus.BAD_REQUEST);
+            .hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     // ---------- login: active account policy (0 / 1 / 2+) ----------
@@ -68,7 +68,7 @@ public class AuthFlowIT extends AbstractIntegrationTest {
         String username = registerUser("alice");
 
         assertThat(postJson("/api/v1/auth/login", null, Map.of("username", username, "password", "wrong-password")))
-                .hasStatus(HttpStatus.UNAUTHORIZED);
+            .hasStatus(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
@@ -76,11 +76,11 @@ public class AuthFlowIT extends AbstractIntegrationTest {
         String username = registerUser("alice");
         for (int i = 0; i < 5; i++) {
             assertThat(postJson("/api/v1/auth/login", null, Map.of("username", username, "password", "wrong-password")))
-                    .hasStatus(HttpStatus.UNAUTHORIZED);
+                .hasStatus(HttpStatus.UNAUTHORIZED);
         }
 
         assertThat(postJson("/api/v1/auth/login", null, Map.of("username", username, "password", PASSWORD)))
-                .hasStatus(HttpStatus.TOO_MANY_REQUESTS);
+            .hasStatus(HttpStatus.TOO_MANY_REQUESTS);
     }
 
     @Test
@@ -93,4 +93,5 @@ public class AuthFlowIT extends AbstractIntegrationTest {
 
         assertThat(login(other).get("token").asText()).isNotBlank();
     }
+
 }

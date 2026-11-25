@@ -22,4 +22,5 @@ public class DeviceStateRequest {
     public void setReported(Map<String, String> reported) {
         this.reported = reported;
     }
+
 }

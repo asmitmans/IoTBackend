@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class DeviceConfigService {
 
     private final DeviceConfigRepository deviceConfigRepository;
+
     private final DeviceRepository deviceRepository;
 
     public DeviceConfigService(DeviceConfigRepository deviceConfigRepository, DeviceRepository deviceRepository) {
@@ -31,13 +32,10 @@ public class DeviceConfigService {
     // GET /config -> device read desired values
     @Transactional(readOnly = true)
     public DeviceConfigResponse getConfig(Device device) {
-        Map<String, String> desired = deviceConfigRepository
-                .findByDeviceId(device.getId())
-                .stream()
-                .filter(c -> c.getDesiredValue() != null)
-                .collect(Collectors.toMap(
-                        DeviceConfig::getKey,
-                        DeviceConfig::getDesiredValue));
+        Map<String, String> desired = deviceConfigRepository.findByDeviceId(device.getId())
+            .stream()
+            .filter(c -> c.getDesiredValue() != null)
+            .collect(Collectors.toMap(DeviceConfig::getKey, DeviceConfig::getDesiredValue));
 
         DeviceConfigResponse respose = new DeviceConfigResponse();
         respose.setDesired(desired);
@@ -48,30 +46,28 @@ public class DeviceConfigService {
     @Transactional
     public void reportState(Device device, DeviceStateRequest request) {
         request.getReported().forEach((key, value) -> {
-            DeviceConfig config = deviceConfigRepository
-                    .findByDeviceIdAndKey(device.getId(), key)
-                    .orElseGet(() -> {
-                        DeviceConfig c = new DeviceConfig();
-                        c.setDevice(device);
-                        c.setKey(key);
-                        c.setConfigVersion(1L);
-                        return c;
-                    });
+            DeviceConfig config = deviceConfigRepository.findByDeviceIdAndKey(device.getId(), key).orElseGet(() -> {
+                DeviceConfig c = new DeviceConfig();
+                c.setDevice(device);
+                c.setKey(key);
+                c.setConfigVersion(1L);
+                return c;
+            });
 
             config.setReportedValue(value);
             if (config.getDesiredValue() == null) {
                 config.setStatus("REPORTED");
-            } else {
+            }
+            else {
                 config.setStatus(value.equals(config.getDesiredValue()) ? "SYNCED" : "CONFLICT");
             }
             deviceConfigRepository.save(config);
         });
 
         // update config_pending flag
-        boolean hasPending = deviceConfigRepository
-                .findByDeviceId(device.getId())
-                .stream()
-                .anyMatch(c -> "PENDING".equals(c.getStatus()));
+        boolean hasPending = deviceConfigRepository.findByDeviceId(device.getId())
+            .stream()
+            .anyMatch(c -> "PENDING".equals(c.getStatus()));
 
         device.setConfigPending(hasPending);
         deviceRepository.save(device);
@@ -81,21 +77,18 @@ public class DeviceConfigService {
     @Transactional
     public void setDesiredConfig(Long deviceId, DeviceConfigRequest request, Long accountId) {
         Device device = deviceRepository.findById(deviceId)
-                                        .filter(d -> accountId == null ||
-                                                (d.getAccount() != null &&
-                                                        d.getAccount().getId().longValue() == accountId))
-                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+            .filter(d -> accountId == null
+                    || (d.getAccount() != null && d.getAccount().getId().longValue() == accountId))
+            .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         request.getDesired().forEach((key, value) -> {
-            DeviceConfig config = deviceConfigRepository
-                    .findByDeviceIdAndKey(deviceId, key)
-                    .orElseGet(() -> {
-                        DeviceConfig c = new DeviceConfig();
-                        c.setDevice(device);
-                        c.setKey(key);
-                        c.setConfigVersion(1L);
-                        return c;
-                    });
+            DeviceConfig config = deviceConfigRepository.findByDeviceIdAndKey(deviceId, key).orElseGet(() -> {
+                DeviceConfig c = new DeviceConfig();
+                c.setDevice(device);
+                c.setKey(key);
+                c.setConfigVersion(1L);
+                return c;
+            });
 
             config.setDesiredValue(value);
             config.setStatus("PENDING");
@@ -110,16 +103,15 @@ public class DeviceConfigService {
     @Transactional(readOnly = true)
     public List<DeviceConfigStatusResponse> getConfigStatus(Long deviceId, Long accountId) {
         Device device = deviceRepository.findById(deviceId)
-                .filter(d -> accountId == null ||
-                        (d.getAccount() != null &&
-                                d.getAccount().getId().longValue() == accountId))
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+            .filter(d -> accountId == null
+                    || (d.getAccount() != null && d.getAccount().getId().longValue() == accountId))
+            .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         return deviceConfigRepository.findByDeviceId(device.getId())
-                .stream()
-                .sorted(Comparator.comparing(DeviceConfig::getKey))
-                .map(this::toStatusResponse)
-                .toList();
+            .stream()
+            .sorted(Comparator.comparing(DeviceConfig::getKey))
+            .map(this::toStatusResponse)
+            .toList();
     }
 
     private DeviceConfigStatusResponse toStatusResponse(DeviceConfig config) {
@@ -131,7 +123,5 @@ public class DeviceConfigService {
         response.setUpdatedAt(config.getUpdatedAt());
         return response;
     }
-
-
 
 }

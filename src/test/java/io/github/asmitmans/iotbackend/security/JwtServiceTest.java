@@ -14,7 +14,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class JwtServiceTest {
 
     private static final String SECRET = "test-secret-key-that-is-long-enough-for-hmac-sha-512-signing-0123456789";
+
     private static final String OTHER_SECRET = "another-secret-key-that-is-long-enough-for-hmac-sha-512-signing-987654";
+
     private static final long ONE_HOUR_MS = 3_600_000L;
 
     private JwtService service;
@@ -87,8 +89,7 @@ public class JwtServiceTest {
 
     @Test
     void extractUsername_withInvalidToken_throws() {
-        assertThatThrownBy(() -> service.extractUsername("not-a-jwt"))
-                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> service.extractUsername("not-a-jwt")).isInstanceOf(JwtException.class);
     }
 
     // ---------- helpers ----------
@@ -97,4 +98,5 @@ public class JwtServiceTest {
         return new UserPrincipal(username, "pw", true, accountId,
                 List.of(authorities).stream().map(SimpleGrantedAuthority::new).toList());
     }
+
 }

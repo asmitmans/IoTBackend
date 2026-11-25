@@ -16,11 +16,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class AttemptLimiterTest {
 
     private static final int MAX_ATTEMPTS = 5;
+
     private static final Duration WINDOW = Duration.ofSeconds(60);
+
     private static final Duration LOCKOUT = Duration.ofSeconds(300);
+
     private static final String MESSAGE = "blocked";
 
     private MutableClock clock;
+
     private AttemptLimiter limiter;
 
     @BeforeEach
@@ -47,9 +51,8 @@ public class AttemptLimiterTest {
     void checkAllowed_atThreshold_throwsTooManyAttempts() {
         fail("alice", MAX_ATTEMPTS);
 
-        assertThatThrownBy(() -> limiter.checkAllowed("alice"))
-                .isInstanceOf(TooManyAttemptsException.class)
-                .hasMessage(MESSAGE);
+        assertThatThrownBy(() -> limiter.checkAllowed("alice")).isInstanceOf(TooManyAttemptsException.class)
+            .hasMessage(MESSAGE);
     }
 
     // ---------- lockout duration ----------
@@ -167,9 +170,11 @@ public class AttemptLimiterTest {
     }
 
     private static final class TestLimiter extends AttemptLimiter {
+
         TestLimiter(Clock clock) {
             super(MAX_ATTEMPTS, WINDOW, LOCKOUT, MESSAGE, clock);
         }
+
     }
 
     private static final class MutableClock extends Clock {
@@ -198,5 +203,7 @@ public class AttemptLimiterTest {
         public Clock withZone(ZoneId zone) {
             return this;
         }
+
     }
+
 }

@@ -4,9 +4,8 @@ import java.security.SecureRandom;
 import java.util.UUID;
 
 /**
- * Generates RFC 9562 UUIDv7 values: 48-bit Unix timestamp (ms) followed by
- * random bits, giving monotonically increasing, B-tree-friendly identifiers
- * unlike random UUIDv4.
+ * Generates RFC 9562 UUIDv7 values: 48-bit Unix timestamp (ms) followed by random bits,
+ * giving monotonically increasing, B-tree-friendly identifiers unlike random UUIDv4.
  */
 public final class UuidV7Generator {
 
@@ -49,4 +48,5 @@ public final class UuidV7Generator {
 
         return new UUID(msb, lsb);
     }
+
 }

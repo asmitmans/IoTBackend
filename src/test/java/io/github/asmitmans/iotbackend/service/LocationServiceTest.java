@@ -29,9 +29,13 @@ public class LocationServiceTest {
     private static final Long ACCOUNT_ID = 10L;
 
     private static final UUID BUILDING_ID = UUID.randomUUID();
+
     private static final UUID FLOOR_ID = UUID.randomUUID();
+
     private static final UUID ROOM_ID = UUID.randomUUID();
+
     private static final UUID RACK_ID = UUID.randomUUID();
+
     private static final UUID WAREHOUSE_ID = UUID.randomUUID();
 
     @Mock
@@ -49,9 +53,13 @@ public class LocationServiceTest {
 
     // Building → Floor → Room → Rack, and a separate root: Warehouse
     private Location building;
+
     private Location floor;
+
     private Location room;
+
     private Location rack;
+
     private Location warehouse;
 
     @BeforeEach
@@ -75,8 +83,8 @@ public class LocationServiceTest {
         givenTheAccountTree();
 
         assertThatThrownBy(() -> service.update(ROOM_ID, request("Room A", ROOM_ID), ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location cannot be moved under itself or its descendants");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Location cannot be moved under itself or its descendants");
 
         assertThat(room.getParent()).isSameAs(floor);
         verify(locationRepository, never()).save(any());
@@ -90,8 +98,8 @@ public class LocationServiceTest {
         givenTheAccountTree();
 
         assertThatThrownBy(() -> service.update(BUILDING_ID, request("Building", RACK_ID), ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location cannot be moved under itself or its descendants");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Location cannot be moved under itself or its descendants");
 
         assertThat(building.getParent()).isNull();
         verify(locationRepository, never()).save(any());
@@ -155,12 +163,13 @@ public class LocationServiceTest {
     void update_withNameTakenAtTheTargetLevel_throwsConflictAndDoesNotSave() {
         givenAccountLocked();
         givenLocationExists(ROOM_ID, room);
-        when(locationRepository.existsByAccountIdAndParentIdAndNameAndIdNot(ACCOUNT_ID, null, "Warehouse", room.getId()))
-                .thenReturn(true);
+        when(locationRepository.existsByAccountIdAndParentIdAndNameAndIdNot(ACCOUNT_ID, null, "Warehouse",
+                room.getId()))
+            .thenReturn(true);
 
         assertThatThrownBy(() -> service.update(ROOM_ID, request("Warehouse", null), ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location with name 'Warehouse' already exists at this level");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Location with name 'Warehouse' already exists at this level");
 
         verify(locationRepository, never()).save(any());
     }
@@ -172,8 +181,8 @@ public class LocationServiceTest {
         when(accountRepository.findByIdForUpdate(ACCOUNT_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.update(ROOM_ID, request("Room A", null), ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Account not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Account not found");
 
         verifyNoInteractions(locationRepository);
     }
@@ -199,11 +208,11 @@ public class LocationServiceTest {
         givenAccountLocked();
         givenLocationExists(ROOM_ID, room);
         when(locationRepository.existsByAccountIdAndParentIdAndName(ACCOUNT_ID, room.getId(), "Rack 1"))
-                .thenReturn(true);
+            .thenReturn(true);
 
         assertThatThrownBy(() -> service.create(request("Rack 1", ROOM_ID), ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location with name 'Rack 1' already exists at this level");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Location with name 'Rack 1' already exists at this level");
 
         verify(locationRepository, never()).save(any());
     }
@@ -226,9 +235,8 @@ public class LocationServiceTest {
         givenLocationExists(ROOM_ID, room);
         when(locationRepository.existsByParentId(room.getId())).thenReturn(true);
 
-        assertThatThrownBy(() -> service.delete(ROOM_ID, ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location has child locations; move or delete them first");
+        assertThatThrownBy(() -> service.delete(ROOM_ID, ACCOUNT_ID)).isInstanceOf(ConflictException.class)
+            .hasMessage("Location has child locations; move or delete them first");
 
         verify(locationRepository, never()).delete(any());
     }
@@ -239,9 +247,8 @@ public class LocationServiceTest {
         givenLocationExists(RACK_ID, rack);
         when(deviceRepository.existsByLocationId(rack.getId())).thenReturn(true);
 
-        assertThatThrownBy(() -> service.delete(RACK_ID, ACCOUNT_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Location has devices assigned; unassign them first");
+        assertThatThrownBy(() -> service.delete(RACK_ID, ACCOUNT_ID)).isInstanceOf(ConflictException.class)
+            .hasMessage("Location has devices assigned; unassign them first");
 
         verify(locationRepository, never()).delete(any());
     }
@@ -273,7 +280,7 @@ public class LocationServiceTest {
 
     private void givenTheAccountTree() {
         when(locationRepository.findByAccountId(ACCOUNT_ID))
-                .thenReturn(List.of(building, floor, room, rack, warehouse));
+            .thenReturn(List.of(building, floor, room, rack, warehouse));
     }
 
     private void givenSaveReturnsTheSameLocation() {
@@ -285,4 +292,5 @@ public class LocationServiceTest {
         verify(locationRepository).save(saved.capture());
         return saved.getValue();
     }
+
 }

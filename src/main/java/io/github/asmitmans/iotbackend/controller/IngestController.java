@@ -32,11 +32,11 @@ public class IngestController {
             security = @SecurityRequirement(name = "ApiKey"))
     @PostMapping
     @PreAuthorize("hasRole('DEVICE')")
-    public ResponseEntity<IngestResponse> ingest(
-            @RequestBody @Valid IngestRequest request,
+    public ResponseEntity<IngestResponse> ingest(@RequestBody @Valid IngestRequest request,
             Authentication authentication) {
 
         Device device = (Device) authentication.getPrincipal();
         return ResponseEntity.ok(ingestService.ingest(request, device));
     }
+
 }

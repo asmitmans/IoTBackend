@@ -10,6 +10,9 @@ import java.util.Set;
 
 @Repository
 public interface MeasurementTypeRepository extends JpaRepository<MeasurementType, Long> {
+
     Optional<MeasurementType> findByName(String name);
+
     List<MeasurementType> findByIdIn(Set<Long> ids);
+
 }

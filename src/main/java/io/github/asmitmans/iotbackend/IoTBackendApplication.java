@@ -8,13 +8,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @SpringBootApplication
-@EnableConfigurationProperties({JwtProperties.class, JoinCodeProperties.class})
-@EnableSpringDataWebSupport(pageSerializationMode =
-		EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
+@EnableConfigurationProperties({ JwtProperties.class, JoinCodeProperties.class })
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class IoTBackendApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(IoTBackendApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(IoTBackendApplication.class, args);
+    }
 
 }

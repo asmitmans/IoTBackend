@@ -3,7 +3,9 @@ package io.github.asmitmans.iotbackend.dto.ingest;
 public class IngestResponse {
 
     private String status;
+
     private boolean configPending;
+
     private boolean commandPending;
 
     public IngestResponse() {
@@ -32,4 +34,5 @@ public class IngestResponse {
     public void setCommandPending(boolean commandPending) {
         this.commandPending = commandPending;
     }
+
 }

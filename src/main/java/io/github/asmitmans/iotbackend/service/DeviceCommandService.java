@@ -20,35 +20,33 @@ import java.util.Optional;
 public class DeviceCommandService {
 
     private final DeviceCommandRepository deviceCommandRepository;
+
     private final DeviceRepository deviceRepository;
+
     private final Clock clock;
 
-    public DeviceCommandService(DeviceCommandRepository deviceCommandRepository,
-                                DeviceRepository deviceRepository,
-                                Clock clock) {
+    public DeviceCommandService(DeviceCommandRepository deviceCommandRepository, DeviceRepository deviceRepository,
+            Clock clock) {
         this.deviceCommandRepository = deviceCommandRepository;
         this.deviceRepository = deviceRepository;
         this.clock = clock;
     }
 
     @Transactional
-    public void queueCommand(Long deviceId, DeviceCommandRequest request,
-                                  Long accountId) {
+    public void queueCommand(Long deviceId, DeviceCommandRequest request, Long accountId) {
         Device device = deviceRepository.findByIdForUpdate(deviceId)
-                                        .filter(d -> accountId == null ||
-                                                (d.getAccount() != null &&
-                                                        d.getAccount().getId().longValue() == accountId))
-                                        .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
+            .filter(d -> accountId == null
+                    || (d.getAccount() != null && d.getAccount().getId().longValue() == accountId))
+            .orElseThrow(() -> new ResourceNotFoundException("Device not found"));
 
         if (device.getAccount() == null) {
             throw new ConflictException("Device is not enrolled to an account");
         }
 
-        Long effectiveAccountId = accountId != null ?
-                accountId : device.getAccount().getId().longValue();
+        Long effectiveAccountId = accountId != null ? accountId : device.getAccount().getId().longValue();
 
-        List<DeviceCommand> queuedOfSameType = deviceCommandRepository
-                .findByDeviceIdAndStatusAndType(device.getId(), "QUEUED", request.getType());
+        List<DeviceCommand> queuedOfSameType = deviceCommandRepository.findByDeviceIdAndStatusAndType(device.getId(),
+                "QUEUED", request.getType());
         queuedOfSameType.forEach(previous -> previous.setStatus("SUPERSEDED"));
         deviceCommandRepository.saveAllAndFlush(queuedOfSameType);
 
@@ -67,24 +65,22 @@ public class DeviceCommandService {
 
     @Transactional
     public Optional<DeviceCommandResponse> getNextCommand(Device device) {
-        return deviceCommandRepository
-                .findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(
-                        device.getId(), "QUEUED")
-                .map(command -> {
-                    command.setStatus("DELIVERED");
-                    command.setDeliveredAt(Instant.now(clock));
-                    deviceCommandRepository.save(command);
+        return deviceCommandRepository.findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(device.getId(), "QUEUED")
+            .map(command -> {
+                command.setStatus("DELIVERED");
+                command.setDeliveredAt(Instant.now(clock));
+                deviceCommandRepository.save(command);
 
-                    boolean stillPending = deviceCommandRepository
-                            .existsByDeviceIdAndStatus(device.getId(), "QUEUED");
-                    device.setCommandPending(stillPending);
-                    deviceRepository.save(device);
+                boolean stillPending = deviceCommandRepository.existsByDeviceIdAndStatus(device.getId(), "QUEUED");
+                device.setCommandPending(stillPending);
+                deviceRepository.save(device);
 
-                    DeviceCommandResponse response = new DeviceCommandResponse();
-                    response.setId(command.getId());
-                    response.setType(command.getType());
-                    response.setPayload(command.getPayload());
-                    return response;
-                });
+                DeviceCommandResponse response = new DeviceCommandResponse();
+                response.setId(command.getId());
+                response.setType(command.getType());
+                response.setPayload(command.getPayload());
+                return response;
+            });
     }
+
 }

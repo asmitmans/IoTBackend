@@ -16,8 +16,11 @@ import java.util.UUID;
 
 @Repository
 public interface DeviceRepository extends JpaRepository<Device, Long> {
+
     List<Device> findByApiKeyPrefix(String apiKeyPrefix);
+
     Optional<Device> findBySerialNumber(String serialNumber);
+
     Optional<Device> findByPublicId(UUID publicId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -29,6 +32,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Optional<Device> findByIdForUpdate(@Param("id") Long id);
 
     List<Device> findByAccountId(Long accountId);
+
     List<Device> findByIdInAndAccountId(List<Long> ids, Long accountId);
 
     Page<Device> findByAccountId(Long accountId, Pageable pageable);
@@ -38,4 +42,5 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     boolean existsByLocationId(Long locationId);
 
     boolean existsByDeviceModelId(Long deviceModelId);
+
 }

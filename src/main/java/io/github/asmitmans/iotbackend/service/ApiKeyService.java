@@ -10,8 +10,11 @@ import java.util.HexFormat;
 public class ApiKeyService {
 
     private static final int KEY_BYTES = 32;
+
     private static final int LOOKUP_PREFIX_LENGTH = 16;
+
     private final PasswordEncoder passwordEncoder;
+
     private final SecureRandom secureRandom = new SecureRandom();
 
     public ApiKeyService(PasswordEncoder passwordEncoder) {
@@ -35,4 +38,5 @@ public class ApiKeyService {
     public boolean verify(String apiKey, String hash) {
         return passwordEncoder.matches(apiKey, hash);
     }
+
 }

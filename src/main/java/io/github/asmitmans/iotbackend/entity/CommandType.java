@@ -45,8 +45,10 @@ public class CommandType extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CommandType other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof CommandType other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 
@@ -54,4 +56,5 @@ public class CommandType extends AuditableEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

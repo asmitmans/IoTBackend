@@ -33,13 +33,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class AbstractIntegrationTest {
 
     protected static final PostgreSQLContainer POSTGRES;
+
     protected static final String PASSWORD = "integration-test-password";
 
     static {
         POSTGRES = new PostgreSQLContainer(DockerImageName.parse("postgres:16.9-alpine"))
-                .withDatabaseName("iotbackend_test")
-                .withUsername("test")
-                .withPassword("test");
+            .withDatabaseName("iotbackend_test")
+            .withUsername("test")
+            .withPassword("test");
         POSTGRES.start();
     }
 
@@ -67,7 +68,9 @@ public abstract class AbstractIntegrationTest {
 
     // ---------- data ----------
 
-    /** Unique per call, so tests never share users (nor their in-memory attempt counters). */
+    /**
+     * Unique per call, so tests never share users (nor their in-memory attempt counters).
+     */
     protected String uniqueUsername(String base) {
         return base + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
@@ -75,13 +78,15 @@ public abstract class AbstractIntegrationTest {
     /** Registers a regular user through the public API. */
     protected String registerUser(String base) {
         String username = uniqueUsername(base);
-        MvcTestResult result = postJson("/api/v1/users", null,
-                Map.of("username", username, "password", PASSWORD));
+        MvcTestResult result = postJson("/api/v1/users", null, Map.of("username", username, "password", PASSWORD));
         assertThat(result).hasStatus(HttpStatus.CREATED);
         return username;
     }
 
-    /** Creates a platform admin directly (there is no API for it and the dev seed does not run in tests). */
+    /**
+     * Creates a platform admin directly (there is no API for it and the dev seed does not
+     * run in tests).
+     */
     protected String createAdmin() {
         Role adminRole = roleRepository.findByName("ROLE_ADMIN").orElseThrow();
         User admin = new User();
@@ -96,16 +101,13 @@ public abstract class AbstractIntegrationTest {
 
     /** Logs in and returns the response body as JSON (token, username, accountId). */
     protected JsonNode login(String username) {
-        MvcTestResult result = postJson("/api/v1/auth/login", null,
-                Map.of("username", username, "password", PASSWORD));
+        MvcTestResult result = postJson("/api/v1/auth/login", null, Map.of("username", username, "password", PASSWORD));
         assertThat(result).hasStatusOk();
         return body(result);
     }
 
     protected MvcTestResult putJson(String uri, String token, Object body) {
-        var request = mvc.put().uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(body));
+        var request = mvc.put().uri(uri).contentType(MediaType.APPLICATION_JSON).content(toJson(body));
         if (token != null) {
             request = request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
@@ -133,7 +135,10 @@ public abstract class AbstractIntegrationTest {
         return login(username).get("token").asText();
     }
 
-    /** Creates an account as the given user; returns the body (publicId, name and a new scoped token). */
+    /**
+     * Creates an account as the given user; returns the body (publicId, name and a new
+     * scoped token).
+     */
     protected JsonNode createAccount(String token, String name) {
         MvcTestResult result = postJson("/api/v1/accounts", token, Map.of("name", name));
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -141,9 +146,13 @@ public abstract class AbstractIntegrationTest {
     }
 
     /** A user who owns an account, with a token scoped to that account. */
-    protected record Owned(String owner, String ownerToken, String accountId) {}
+    protected record Owned(String owner, String ownerToken, String accountId) {
+    }
 
-    /** Registers a user who creates an account; the returned token is scoped to that account. */
+    /**
+     * Registers a user who creates an account; the returned token is scoped to that
+     * account.
+     */
     protected Owned accountOwnedBy(String base) {
         String owner = registerUser(base);
         JsonNode account = createAccount(loginToken(owner), base + "'s farm");
@@ -156,7 +165,10 @@ public abstract class AbstractIntegrationTest {
         return body(result).get("joinCode").asText();
     }
 
-    /** Joins an account with a code; returns the body (publicId, name and a token scoped to it). */
+    /**
+     * Joins an account with a code; returns the body (publicId, name and a token scoped
+     * to it).
+     */
     protected JsonNode join(String token, String joinCode) {
         var result = postJson("/api/v1/accounts/join", token, Map.of("joinCode", joinCode));
         assertThat(result).hasStatusOk();
@@ -173,7 +185,10 @@ public abstract class AbstractIntegrationTest {
         return body(result).get("id").asLong();
     }
 
-    /** Registers a new UNCLAIMED device as admin; returns the body (publicId, serialNumber, status). */
+    /**
+     * Registers a new UNCLAIMED device as admin; returns the body (publicId,
+     * serialNumber, status).
+     */
     protected JsonNode registerDevice(String adminToken, long deviceModelId) {
         MvcTestResult result = postJson("/api/v1/devices", adminToken, Map.of("deviceModelId", deviceModelId));
         assertThat(result).hasStatus(HttpStatus.CREATED);
@@ -202,9 +217,7 @@ public abstract class AbstractIntegrationTest {
     // ---------- low level ----------
 
     protected MvcTestResult postJson(String uri, String token, Object body) {
-        var request = mvc.post().uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(body));
+        var request = mvc.post().uri(uri).contentType(MediaType.APPLICATION_JSON).content(toJson(body));
         if (token != null) {
             request = request.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
@@ -222,7 +235,8 @@ public abstract class AbstractIntegrationTest {
     protected JsonNode body(MvcTestResult result) {
         try {
             return objectMapper.readTree(result.getResponse().getContentAsString());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IllegalStateException("Response body is not valid JSON", e);
         }
     }
@@ -230,8 +244,10 @@ public abstract class AbstractIntegrationTest {
     private String toJson(Object body) {
         try {
             return objectMapper.writeValueAsString(body);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
+
 }

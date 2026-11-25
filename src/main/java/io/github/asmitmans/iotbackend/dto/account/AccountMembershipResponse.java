@@ -7,7 +7,9 @@ import java.util.UUID;
 public class AccountMembershipResponse {
 
     private UUID publicId;
+
     private String name;
+
     private AccountRole accountRole;
 
     public AccountMembershipResponse() {
@@ -42,4 +44,5 @@ public class AccountMembershipResponse {
     public void setAccountRole(AccountRole accountRole) {
         this.accountRole = accountRole;
     }
+
 }

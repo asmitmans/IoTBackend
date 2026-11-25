@@ -30,8 +30,11 @@ import static org.mockito.Mockito.*;
 public class DeviceCommandServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
+
     private static final Long DEVICE_ID = 1L;
+
     private static final Long ACCOUNT_ID = 10L;
+
     private static final Long OTHER_ACCOUNT_ID = 99L;
 
     @Mock
@@ -44,8 +47,7 @@ public class DeviceCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new DeviceCommandService(deviceCommandRepository, deviceRepository,
-                Clock.fixed(NOW, ZoneOffset.UTC));
+        service = new DeviceCommandService(deviceCommandRepository, deviceRepository, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     // ---------- queueCommand() ----------
@@ -55,7 +57,7 @@ public class DeviceCommandServiceTest {
         Device device = deviceOfAccount(ACCOUNT_ID);
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(device));
         when(deviceCommandRepository.findByDeviceIdAndStatusAndType(DEVICE_ID, "QUEUED", "REBOOT"))
-                .thenReturn(List.of());
+            .thenReturn(List.of());
 
         service.queueCommand(DEVICE_ID, request("REBOOT", "{}"), ACCOUNT_ID);
 
@@ -74,7 +76,7 @@ public class DeviceCommandServiceTest {
         Device device = deviceOfAccount(ACCOUNT_ID);
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(device));
         when(deviceCommandRepository.findByDeviceIdAndStatusAndType(DEVICE_ID, "QUEUED", "REBOOT"))
-                .thenReturn(List.of());
+            .thenReturn(List.of());
 
         service.queueCommand(DEVICE_ID, request("REBOOT", null), null);
 
@@ -87,7 +89,7 @@ public class DeviceCommandServiceTest {
         DeviceCommand previous = queuedCommand(device, "SET_TEMP", "{\"value\":20}");
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(device));
         when(deviceCommandRepository.findByDeviceIdAndStatusAndType(DEVICE_ID, "QUEUED", "SET_TEMP"))
-                .thenReturn(List.of(previous));
+            .thenReturn(List.of(previous));
 
         service.queueCommand(DEVICE_ID, request("SET_TEMP", "{\"value\":22}"), ACCOUNT_ID);
 
@@ -103,8 +105,8 @@ public class DeviceCommandServiceTest {
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.queueCommand(DEVICE_ID, request("REBOOT", null), ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceCommandRepository);
     }
@@ -114,8 +116,8 @@ public class DeviceCommandServiceTest {
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(deviceOfAccount(ACCOUNT_ID)));
 
         assertThatThrownBy(() -> service.queueCommand(DEVICE_ID, request("REBOOT", null), OTHER_ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceCommandRepository);
         verify(deviceRepository, never()).save(any());
@@ -126,8 +128,8 @@ public class DeviceCommandServiceTest {
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(deviceOfAccount(null)));
 
         assertThatThrownBy(() -> service.queueCommand(DEVICE_ID, request("REBOOT", null), ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceCommandRepository);
     }
@@ -137,8 +139,8 @@ public class DeviceCommandServiceTest {
         when(deviceRepository.findByIdForUpdate(DEVICE_ID)).thenReturn(Optional.of(deviceOfAccount(null)));
 
         assertThatThrownBy(() -> service.queueCommand(DEVICE_ID, request("REBOOT", null), null))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Device is not enrolled to an account");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Device is not enrolled to an account");
 
         verifyNoInteractions(deviceCommandRepository);
         verify(deviceRepository, never()).save(any());
@@ -153,7 +155,7 @@ public class DeviceCommandServiceTest {
         DeviceCommand command = queuedCommand(device, "REBOOT", "{}");
         command.setId(5L);
         when(deviceCommandRepository.findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(DEVICE_ID, "QUEUED"))
-                .thenReturn(Optional.of(command));
+            .thenReturn(Optional.of(command));
         when(deviceCommandRepository.existsByDeviceIdAndStatus(DEVICE_ID, "QUEUED")).thenReturn(false);
 
         Optional<DeviceCommandResponse> response = service.getNextCommand(device);
@@ -175,7 +177,7 @@ public class DeviceCommandServiceTest {
         Device device = deviceOfAccount(ACCOUNT_ID);
         device.setCommandPending(true);
         when(deviceCommandRepository.findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(DEVICE_ID, "QUEUED"))
-                .thenReturn(Optional.of(queuedCommand(device, "REBOOT", null)));
+            .thenReturn(Optional.of(queuedCommand(device, "REBOOT", null)));
         when(deviceCommandRepository.existsByDeviceIdAndStatus(DEVICE_ID, "QUEUED")).thenReturn(true);
 
         service.getNextCommand(device);
@@ -187,7 +189,7 @@ public class DeviceCommandServiceTest {
     void getNextCommand_withoutQueuedCommands_returnsEmptyAndSavesNothing() {
         Device device = deviceOfAccount(ACCOUNT_ID);
         when(deviceCommandRepository.findFirstByDeviceIdAndStatusOrderByQueuedAtAsc(DEVICE_ID, "QUEUED"))
-                .thenReturn(Optional.empty());
+            .thenReturn(Optional.empty());
 
         Optional<DeviceCommandResponse> response = service.getNextCommand(device);
 
@@ -230,4 +232,5 @@ public class DeviceCommandServiceTest {
         verify(deviceCommandRepository).save(saved.capture());
         return saved.getValue();
     }
+
 }

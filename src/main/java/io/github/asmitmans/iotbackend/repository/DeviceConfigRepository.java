@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DeviceConfigRepository extends JpaRepository<DeviceConfig,Long> {
+public interface DeviceConfigRepository extends JpaRepository<DeviceConfig, Long> {
 
     List<DeviceConfig> findByDeviceId(Long deviceId);
 
     Optional<DeviceConfig> findByDeviceIdAndKey(Long deviceId, String key);
 
     void deleteByDeviceId(Long deviceId);
+
 }

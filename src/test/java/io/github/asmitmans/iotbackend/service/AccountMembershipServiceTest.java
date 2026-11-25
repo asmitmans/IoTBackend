@@ -40,6 +40,7 @@ import static org.mockito.Mockito.when;
 class AccountMembershipServiceTest {
 
     private static final UUID ACCOUNT_PUBLIC_ID = UUID.randomUUID();
+
     private static final long ACCOUNT_ID = 10L;
 
     @Mock
@@ -92,11 +93,12 @@ class AccountMembershipServiceTest {
     void switchAccount_notAMember_throwsAccessDeniedAndIssuesNoToken() {
         User alice = givenUser("alice", 1);
         givenAccount();
-        when(accountMembershipRepository.findByUserIdAndAccountId(alice.getId(), ACCOUNT_ID)).thenReturn(Optional.empty());
+        when(accountMembershipRepository.findByUserIdAndAccountId(alice.getId(), ACCOUNT_ID))
+            .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.switchAccount("alice", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User is not a member of this account");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User is not a member of this account");
 
         verifyNoInteractions(scopedTokenService);
     }
@@ -138,8 +140,8 @@ class AccountMembershipServiceTest {
         givenMembership("bob", 2, AccountRole.MEMBER);
 
         assertThatThrownBy(() -> service.generateJoinCode("bob", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Only the account OWNER can generate a join code");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Only the account OWNER can generate a join code");
 
         verifyNoInteractions(joinCodeService);
         verify(accountRepository, never()).save(any());
@@ -170,10 +172,10 @@ class AccountMembershipServiceTest {
     @Test
     void join_tooManyAttempts_throwsBeforeDoingAnythingElse() {
         doThrow(new TooManyAttemptsException("Too many failed join attempts. Try again in a minute."))
-                .when(joinAttemptService).checkAllowed("alice");
+            .when(joinAttemptService)
+            .checkAllowed("alice");
 
-        assertThatThrownBy(() -> service.join("alice", "CODE"))
-                .isInstanceOf(TooManyAttemptsException.class);
+        assertThatThrownBy(() -> service.join("alice", "CODE")).isInstanceOf(TooManyAttemptsException.class);
 
         verifyNoInteractions(userRepository, joinCodeService);
     }
@@ -182,9 +184,8 @@ class AccountMembershipServiceTest {
     void join_unknownUser_throwsNotFound() {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.join("ghost", "CODE"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("User not found");
+        assertThatThrownBy(() -> service.join("ghost", "CODE")).isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("User not found");
 
         verifyNoInteractions(joinCodeService);
     }
@@ -194,9 +195,8 @@ class AccountMembershipServiceTest {
         givenUser("alice", 1);
         when(joinCodeService.resolveAndVerify("BAD")).thenThrow(new AccessDeniedException("Invalid join code"));
 
-        assertThatThrownBy(() -> service.join("alice", "BAD"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Invalid join code");
+        assertThatThrownBy(() -> service.join("alice", "BAD")).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Invalid join code");
 
         verify(joinAttemptService).recordFailure("alice");
         verify(joinAttemptService, never()).recordSuccess(any());
@@ -208,9 +208,8 @@ class AccountMembershipServiceTest {
         givenUser("alice", 1);
         when(joinCodeService.resolveAndVerify("OLD")).thenThrow(new ConflictException("Join code has expired"));
 
-        assertThatThrownBy(() -> service.join("alice", "OLD"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Join code has expired");
+        assertThatThrownBy(() -> service.join("alice", "OLD")).isInstanceOf(ConflictException.class)
+            .hasMessage("Join code has expired");
 
         verify(joinAttemptService).recordFailure("alice");
         verify(accountMembershipRepository, never()).save(any());
@@ -222,9 +221,8 @@ class AccountMembershipServiceTest {
         when(joinCodeService.resolveAndVerify("CODE")).thenReturn(account);
         when(accountMembershipRepository.existsByUserIdAndAccountId(1, ACCOUNT_ID)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.join("alice", "CODE"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("User is already a member of this account");
+        assertThatThrownBy(() -> service.join("alice", "CODE")).isInstanceOf(ConflictException.class)
+            .hasMessage("User is already a member of this account");
 
         verify(joinAttemptService, never()).recordSuccess(any());
         verify(accountMembershipRepository, never()).save(any());
@@ -257,9 +255,8 @@ class AccountMembershipServiceTest {
         AccountMembership membership = givenMembership("alice", 1, AccountRole.OWNER);
         when(accountMembershipRepository.countByAccountIdAndAccountRole(ACCOUNT_ID, AccountRole.OWNER)).thenReturn(1L);
 
-        assertThatThrownBy(() -> service.leave("alice", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("You are the only OWNER. Promote another member before leaving.");
+        assertThatThrownBy(() -> service.leave("alice", ACCOUNT_PUBLIC_ID)).isInstanceOf(ConflictException.class)
+            .hasMessage("You are the only OWNER. Promote another member before leaving.");
 
         verify(accountMembershipRepository, never()).delete(membership);
     }
@@ -269,8 +266,8 @@ class AccountMembershipServiceTest {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.leave("ghost", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("User not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("User not found");
     }
 
     @Test
@@ -279,19 +276,19 @@ class AccountMembershipServiceTest {
         when(accountRepository.findByPublicId(ACCOUNT_PUBLIC_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.leave("alice", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Account not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Account not found");
     }
 
     @Test
     void leave_notAMember_throwsAccessDenied() {
         User alice = givenUser("alice", 1);
         givenAccount();
-        when(accountMembershipRepository.findByUserIdAndAccountId(alice.getId(), ACCOUNT_ID)).thenReturn(Optional.empty());
+        when(accountMembershipRepository.findByUserIdAndAccountId(alice.getId(), ACCOUNT_ID))
+            .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.leave("alice", ACCOUNT_PUBLIC_ID))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("User is not a member of this account");
+        assertThatThrownBy(() -> service.leave("alice", ACCOUNT_PUBLIC_ID)).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("User is not a member of this account");
     }
 
     // ---------- removeMember() ----------
@@ -323,8 +320,8 @@ class AccountMembershipServiceTest {
         when(accountMembershipRepository.countByAccountIdAndAccountRole(ACCOUNT_ID, AccountRole.OWNER)).thenReturn(1L);
 
         assertThatThrownBy(() -> service.removeMember("alice", ACCOUNT_PUBLIC_ID, "alice"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Cannot remove the only OWNER of an account");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Cannot remove the only OWNER of an account");
 
         verify(accountMembershipRepository, never()).delete(onlyOwner);
     }
@@ -334,8 +331,8 @@ class AccountMembershipServiceTest {
         givenMembership("bob", 2, AccountRole.MEMBER);
 
         assertThatThrownBy(() -> service.removeMember("bob", ACCOUNT_PUBLIC_ID, "alice"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Only the account OWNER can remove members");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Only the account OWNER can remove members");
 
         verify(accountMembershipRepository, never()).delete(any());
     }
@@ -346,19 +343,20 @@ class AccountMembershipServiceTest {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.removeMember("alice", ACCOUNT_PUBLIC_ID, "ghost"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Target user not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Target user not found");
     }
 
     @Test
     void removeMember_targetNotInTheAccount_throwsNotFound() {
         givenMembership("alice", 1, AccountRole.OWNER);
         User bob = givenUser("bob", 2);
-        when(accountMembershipRepository.findByUserIdAndAccountId(bob.getId(), ACCOUNT_ID)).thenReturn(Optional.empty());
+        when(accountMembershipRepository.findByUserIdAndAccountId(bob.getId(), ACCOUNT_ID))
+            .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.removeMember("alice", ACCOUNT_PUBLIC_ID, "bob"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Target user is not a member of this account");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Target user is not a member of this account");
     }
 
     // ---------- promote() ----------
@@ -380,8 +378,8 @@ class AccountMembershipServiceTest {
         AccountMembership target = givenMembership("bob", 2, AccountRole.OWNER);
 
         assertThatThrownBy(() -> service.promote("alice", ACCOUNT_PUBLIC_ID, "bob"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("User is already an OWNER of this account");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("User is already an OWNER of this account");
 
         verify(accountMembershipRepository, never()).save(target);
     }
@@ -391,19 +389,20 @@ class AccountMembershipServiceTest {
         givenMembership("bob", 2, AccountRole.MEMBER);
 
         assertThatThrownBy(() -> service.promote("bob", ACCOUNT_PUBLIC_ID, "carol"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Only the account OWNER can promote members");
+            .isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Only the account OWNER can promote members");
     }
 
     @Test
     void promote_targetNotInTheAccount_throwsNotFound() {
         givenMembership("alice", 1, AccountRole.OWNER);
         User bob = givenUser("bob", 2);
-        when(accountMembershipRepository.findByUserIdAndAccountId(bob.getId(), ACCOUNT_ID)).thenReturn(Optional.empty());
+        when(accountMembershipRepository.findByUserIdAndAccountId(bob.getId(), ACCOUNT_ID))
+            .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.promote("alice", ACCOUNT_PUBLIC_ID, "bob"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Target user is not a member of this account");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Target user is not a member of this account");
     }
 
     // ---------- helpers ----------
@@ -421,12 +420,15 @@ class AccountMembershipServiceTest {
     }
 
     // Stubs a user that is a member of the shared test account with the given role.
-    // The account lookup is lenient because tests call this helper once per user (requester and target).
+    // The account lookup is lenient because tests call this helper once per user
+    // (requester and target).
     private AccountMembership givenMembership(String username, int userId, AccountRole role) {
         User user = givenUser(username, userId);
         lenient().when(accountRepository.findByPublicId(ACCOUNT_PUBLIC_ID)).thenReturn(Optional.of(account));
         AccountMembership membership = new AccountMembership(user, account, role);
-        when(accountMembershipRepository.findByUserIdAndAccountId(userId, ACCOUNT_ID)).thenReturn(Optional.of(membership));
+        when(accountMembershipRepository.findByUserIdAndAccountId(userId, ACCOUNT_ID))
+            .thenReturn(Optional.of(membership));
         return membership;
     }
+
 }

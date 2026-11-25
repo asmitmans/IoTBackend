@@ -8,8 +8,11 @@ import java.util.Set;
 public class DeviceModelDetailResponse {
 
     private Long id;
+
     private String name;
+
     private Set<MeasurementTypeResponse> measurementTypes;
+
     private Set<CommandTypeResponse> commandTypes;
 
     public DeviceModelDetailResponse() {
@@ -46,4 +49,5 @@ public class DeviceModelDetailResponse {
     public void setCommandTypes(Set<CommandTypeResponse> commandTypes) {
         this.commandTypes = commandTypes;
     }
+
 }

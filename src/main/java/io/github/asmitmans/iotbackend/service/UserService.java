@@ -18,7 +18,9 @@ import java.util.Set;
 public class UserService {
 
     private final UserRepository userRepository;
+
     private final RoleRepository roleRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
@@ -34,7 +36,7 @@ public class UserService {
         }
 
         Role defaultRole = roleRepository.findByName("ROLE_USER")
-                                         .orElseThrow(() -> new ResourceNotFoundException("Role not found: ROLE_USER"));
+            .orElseThrow(() -> new ResourceNotFoundException("Role not found: ROLE_USER"));
 
         User user = new User();
         user.setUsername(request.getUsername());
@@ -49,4 +51,5 @@ public class UserService {
 
         return new UserRegistrationResponse(user.getUsername());
     }
+
 }

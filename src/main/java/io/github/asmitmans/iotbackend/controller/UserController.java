@@ -24,9 +24,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Operation(summary = "Register a new user", description = "Public endpoint — no authentication required. New user has no account until they create or join one.")
+    @Operation(summary = "Register a new user",
+            description = "Public endpoint — no authentication required. New user has no account until they create or join one.")
     @PostMapping
     public ResponseEntity<UserRegistrationResponse> register(@Valid @RequestBody UserRegistrationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
     }
+
 }

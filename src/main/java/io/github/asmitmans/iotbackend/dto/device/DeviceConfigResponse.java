@@ -6,7 +6,8 @@ public class DeviceConfigResponse {
 
     private Map<String, String> desired;
 
-    public DeviceConfigResponse() {}
+    public DeviceConfigResponse() {
+    }
 
     public Map<String, String> getDesired() {
         return desired;
@@ -15,4 +16,5 @@ public class DeviceConfigResponse {
     public void setDesired(Map<String, String> desired) {
         this.desired = desired;
     }
+
 }

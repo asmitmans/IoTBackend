@@ -3,9 +3,13 @@ package io.github.asmitmans.iotbackend.dto.measurementtype;
 public class MeasurementTypeResponse {
 
     private Long id;
+
     private String name;
+
     private String siUnit;
+
     private String category;
+
     private String dataType;
 
     public MeasurementTypeResponse() {
@@ -50,4 +54,5 @@ public class MeasurementTypeResponse {
     public void setDataType(String dataType) {
         this.dataType = dataType;
     }
+
 }

@@ -5,9 +5,13 @@ import java.time.Instant;
 public class MeasurementResponse {
 
     private Long id;
+
     private Long deviceId;
+
     private Instant recordedAt;
+
     private Instant receivedAt;
+
     private String payload;
 
     public MeasurementResponse() {

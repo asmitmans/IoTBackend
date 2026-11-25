@@ -5,8 +5,11 @@ import java.util.UUID;
 public class DeviceEnrollResponse {
 
     private UUID publicId;
+
     private String serialNumber;
+
     private String name;
+
     private String status;
 
     public DeviceEnrollResponse() {
@@ -50,4 +53,5 @@ public class DeviceEnrollResponse {
     public void setStatus(String status) {
         this.status = status;
     }
+
 }

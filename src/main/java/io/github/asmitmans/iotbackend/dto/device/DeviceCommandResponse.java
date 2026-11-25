@@ -3,7 +3,9 @@ package io.github.asmitmans.iotbackend.dto.device;
 public class DeviceCommandResponse {
 
     private Long id;
+
     private String type;
+
     private String payload;
 
     public DeviceCommandResponse() {
@@ -32,4 +34,5 @@ public class DeviceCommandResponse {
     public void setPayload(String payload) {
         this.payload = payload;
     }
+
 }

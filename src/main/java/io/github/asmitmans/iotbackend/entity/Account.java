@@ -73,8 +73,10 @@ public class Account extends PubliclyIdentifiableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Account other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Account other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 
@@ -82,4 +84,5 @@ public class Account extends PubliclyIdentifiableEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

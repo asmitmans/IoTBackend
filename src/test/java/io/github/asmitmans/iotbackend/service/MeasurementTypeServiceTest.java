@@ -53,10 +53,10 @@ public class MeasurementTypeServiceTest {
         when(measurementTypeRepository.findById(ID)).thenReturn(Optional.of(entity));
         when(deviceModelRepository.existsByMeasurementTypesId(ID)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.delete(ID))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Measurement type is used by device models; remove it from them first");
+        assertThatThrownBy(() -> service.delete(ID)).isInstanceOf(ConflictException.class)
+            .hasMessage("Measurement type is used by device models; remove it from them first");
 
         verify(measurementTypeRepository, never()).delete(any());
     }
+
 }

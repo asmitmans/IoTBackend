@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
+
     private final AccountMembershipRepository accountMembershipRepository;
 
-    public UserDetailsServiceImpl(UserRepository userRepository, AccountMembershipRepository accountMembershipRepository) {
+    public UserDetailsServiceImpl(UserRepository userRepository,
+            AccountMembershipRepository accountMembershipRepository) {
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
     }
@@ -30,19 +32,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         UUID activeAccountId = resolveActiveAccountId(user.getId());
 
-        return new UserPrincipal(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                activeAccountId,
-                user.getRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getName()))
-                        .collect(Collectors.toSet())
-        );
+        return new UserPrincipal(user.getUsername(), user.getPassword(), user.isEnabled(), activeAccountId,
+                user.getRoles()
+                    .stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .collect(Collectors.toSet()));
     }
 
     private UUID resolveActiveAccountId(Integer userId) {
@@ -54,4 +52,5 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return null;
     }
+
 }

@@ -35,11 +35,14 @@ import static org.mockito.Mockito.*;
 public class DeviceServiceTest {
 
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
-    private static final String SERIAL = "ABCDEFGHJKLMNPQR";
-    private static final Long DEVICE_ID = 42L;
-    private static final Long MODEL_ID = 7L;
-    private static final String SERIAL_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+    private static final String SERIAL = "ABCDEFGHJKLMNPQR";
+
+    private static final Long DEVICE_ID = 42L;
+
+    private static final Long MODEL_ID = 7L;
+
+    private static final String SERIAL_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     @Mock
     private DeviceRepository deviceRepository;
@@ -58,8 +61,8 @@ public class DeviceServiceTest {
     @BeforeEach
     void setUp() {
         Clock fixedClock = Clock.fixed(NOW, ZoneOffset.UTC);
-        service = new DeviceService(deviceRepository, accountRepository, deviceModelRepository,
-                apiKeyService, fixedClock);
+        service = new DeviceService(deviceRepository, accountRepository, deviceModelRepository, apiKeyService,
+                fixedClock);
     }
 
     // ---------- enroll() ----------
@@ -85,14 +88,14 @@ public class DeviceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"PENDING", "ACTIVE", "INACTIVE"})
+    @ValueSource(strings = { "PENDING", "ACTIVE", "INACTIVE" })
     void enroll_whenDeviceIsNotUnclaimed_throwsConflictAndDoesNotSave(String status) {
         Device device = deviceWithStatus(status);
         when(deviceRepository.findBySerialNumberForUpdate(SERIAL)).thenReturn(Optional.of(device));
 
         assertThatThrownBy(() -> service.enroll(SERIAL, UUID.randomUUID(), "Sensor 1"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Device is not available for enrollment");
+            .isInstanceOf(ConflictException.class)
+            .hasMessage("Device is not available for enrollment");
 
         verifyNoInteractions(accountRepository);
         verify(deviceRepository, never()).save(any());
@@ -106,8 +109,8 @@ public class DeviceServiceTest {
         when(accountRepository.findByPublicId(accountPublicId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.enroll(SERIAL, accountPublicId, "Sensor 1"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Account not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Account not found");
 
         assertThat(device.getStatus()).isEqualTo("UNCLAIMED");
         verify(deviceRepository, never()).save(any());
@@ -118,8 +121,8 @@ public class DeviceServiceTest {
         when(deviceRepository.findBySerialNumberForUpdate(SERIAL)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.enroll(SERIAL, UUID.randomUUID(), "Sensor 1"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(accountRepository);
     }
@@ -161,9 +164,8 @@ public class DeviceServiceTest {
         Device device = pendingDeviceExpiringAt(NOW.minusSeconds(1));
         when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
 
-        assertThatThrownBy(() -> service.claim(SERIAL))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Enrollment window expired");
+        assertThatThrownBy(() -> service.claim(SERIAL)).isInstanceOf(ConflictException.class)
+            .hasMessage("Enrollment window expired");
 
         assertThat(device.getStatus()).isEqualTo("UNCLAIMED");
         assertThat(device.getAccount()).isNull();
@@ -173,14 +175,13 @@ public class DeviceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"UNCLAIMED", "ACTIVE", "INACTIVE"})
+    @ValueSource(strings = { "UNCLAIMED", "ACTIVE", "INACTIVE" })
     void claim_whenDeviceIsNotPending_throwsConflictAndDoesNotSave(String status) {
         Device device = deviceWithStatus(status);
         when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.of(device));
 
-        assertThatThrownBy(() -> service.claim(SERIAL))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Device is not pending enrollment");
+        assertThatThrownBy(() -> service.claim(SERIAL)).isInstanceOf(ConflictException.class)
+            .hasMessage("Device is not pending enrollment");
 
         verifyNoInteractions(apiKeyService);
         verify(deviceRepository, never()).save(any());
@@ -190,9 +191,8 @@ public class DeviceServiceTest {
     void claim_whenDeviceDoesNotExist_throwsNotFound() {
         when(deviceRepository.findBySerialNumber(SERIAL)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.claim(SERIAL))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+        assertThatThrownBy(() -> service.claim(SERIAL)).isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(apiKeyService);
     }
@@ -200,7 +200,7 @@ public class DeviceServiceTest {
     // ---------- updateStatus() ----------
 
     @ParameterizedTest
-    @ValueSource(strings = {"ACTIVE", "INACTIVE"})
+    @ValueSource(strings = { "ACTIVE", "INACTIVE" })
     void updateStatus_withAllowedStatus_setsStatusAndSaves(String newStatus) {
         Device device = deviceWithStatus("ACTIVE");
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
@@ -212,14 +212,14 @@ public class DeviceServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"UNCLAIMED", "PENDING", "active", "UNKNOWN"})
+    @ValueSource(strings = { "UNCLAIMED", "PENDING", "active", "UNKNOWN" })
     void updateStatus_withDisallowedStatus_throwsIllegalArgumentAndDoesNotSave(String newStatus) {
         Device device = deviceWithStatus("ACTIVE");
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
 
         assertThatThrownBy(() -> service.updateStatus(DEVICE_ID, newStatus))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Invalid status: " + newStatus);
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Invalid status: " + newStatus);
 
         assertThat(device.getStatus()).isEqualTo("ACTIVE");
         verify(deviceRepository, never()).save(any());
@@ -230,8 +230,8 @@ public class DeviceServiceTest {
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateStatus(DEVICE_ID, "ACTIVE"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verify(deviceRepository, never()).save(any());
     }
@@ -257,9 +257,8 @@ public class DeviceServiceTest {
 
     @Test
     void register_whenGeneratedSerialCollides_retriesUntilItIsFree() {
-        when(deviceRepository.findBySerialNumber(anyString()))
-                .thenReturn(Optional.of(new Device()))
-                .thenReturn(Optional.empty());
+        when(deviceRepository.findBySerialNumber(anyString())).thenReturn(Optional.of(new Device()))
+            .thenReturn(Optional.empty());
         when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.of(new DeviceModel()));
         givenSaveReturnsTheSameDevice();
 
@@ -275,8 +274,8 @@ public class DeviceServiceTest {
         when(deviceModelRepository.findById(MODEL_ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.register(registrationRequest(MODEL_ID)))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device model not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device model not found");
 
         verify(deviceRepository, never()).save(any());
     }
@@ -318,4 +317,5 @@ public class DeviceServiceTest {
         verify(deviceRepository).save(saved.capture());
         return saved.getValue();
     }
+
 }

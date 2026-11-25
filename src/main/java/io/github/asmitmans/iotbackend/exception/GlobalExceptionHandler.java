@@ -18,12 +18,10 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final org.slf4j.Logger log =
-            org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(
-            MethodArgumentNotValidException ex,
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex,
             HttpServletRequest request) {
 
         Map<String, String> errors = new HashMap<>();
@@ -35,64 +33,53 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleBadCredentials(
-            HttpServletRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "Invalid username or password",
-                     request.getRequestURI(), null);
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(HttpServletRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "Invalid username or password", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(TooManyAttemptsException.class)
-    public ResponseEntity<Map<String, Object>> handleTooManyAttempts(
-            TooManyAttemptsException ex,
+    public ResponseEntity<Map<String, Object>> handleTooManyAttempts(TooManyAttemptsException ex,
             HttpServletRequest request) {
         return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(HttpServletRequest request) {
         return build(HttpStatus.FORBIDDEN, "Access denied", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex,
+            HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(
-            Exception ex,
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error",
-                     request.getRequestURI(), null);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(
-            ResourceNotFoundException ex,
+    public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex,
             HttpServletRequest request) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Map<String, Object>> handleDataIntegrity(
-            DataIntegrityViolationException ex,
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(DataIntegrityViolationException ex,
             HttpServletRequest request) {
         log.warn("Data integrity violation on {}: {}", request.getRequestURI(), ex.getMostSpecificCause().getMessage());
-        return build(HttpStatus.CONFLICT, "Operation conflicts with existing data",
-                request.getRequestURI(), null);
+        return build(HttpStatus.CONFLICT, "Operation conflicts with existing data", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, Object>> handleConflict(
-            ConflictException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex, HttpServletRequest request) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), null);
     }
 
-    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message,
-                                                      String path, Map<String, String> errors) {
+    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message, String path,
+            Map<String, String> errors) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
         body.put("status", status.value());

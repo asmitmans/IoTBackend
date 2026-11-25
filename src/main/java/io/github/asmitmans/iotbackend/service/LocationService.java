@@ -25,11 +25,13 @@ import java.util.stream.Collectors;
 public class LocationService {
 
     private final LocationRepository locationRepository;
+
     private final AccountRepository accountRepository;
+
     private final DeviceRepository deviceRepository;
 
     public LocationService(LocationRepository locationRepository, AccountRepository accountRepository,
-                           DeviceRepository deviceRepository) {
+            DeviceRepository deviceRepository) {
         this.locationRepository = locationRepository;
         this.accountRepository = accountRepository;
         this.deviceRepository = deviceRepository;
@@ -38,9 +40,9 @@ public class LocationService {
     @Transactional(readOnly = true)
     public List<LocationResponse> getAll(Long accountId) {
         return locationRepository.findByAccountId(accountId)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+            .stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -79,8 +81,8 @@ public class LocationService {
             throw new ConflictException("Location cannot be moved under itself or its descendants");
         }
 
-        if (locationRepository.existsByAccountIdAndParentIdAndNameAndIdNot(
-                accountId, parentId, request.getName(), entity.getId())) {
+        if (locationRepository.existsByAccountIdAndParentIdAndNameAndIdNot(accountId, parentId, request.getName(),
+                entity.getId())) {
             throw duplicateName(request.getName());
         }
 
@@ -108,7 +110,7 @@ public class LocationService {
 
     private Account lockAccount(Long accountId) {
         return accountRepository.findByIdForUpdate(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
     }
 
     private Location findParentOrNull(LocationRequest request, Long accountId) {
@@ -120,10 +122,10 @@ public class LocationService {
 
     private Set<Long> familyOf(Location root, Long accountId) {
         Map<Long, List<Long>> childIdsByParentId = locationRepository.findByAccountId(accountId)
-                .stream()
-                .filter(l -> l.getParent() != null)
-                .collect(Collectors.groupingBy(l -> l.getParent().getId(),
-                        Collectors.mapping(Location::getId, Collectors.toList())));
+            .stream()
+            .filter(l -> l.getParent() != null)
+            .collect(Collectors.groupingBy(l -> l.getParent().getId(),
+                    Collectors.mapping(Location::getId, Collectors.toList())));
 
         Set<Long> family = new HashSet<>();
         Deque<Long> pending = new ArrayDeque<>();
@@ -144,7 +146,7 @@ public class LocationService {
 
     private Location findOrThrow(UUID publicId, Long accountId) {
         return locationRepository.findByPublicIdAndAccountId(publicId, accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
     }
 
     private LocationResponse toResponse(Location entity) {
@@ -154,4 +156,5 @@ public class LocationService {
         r.setParentPublicId(entity.getParent() != null ? entity.getParent().getPublicId() : null);
         return r;
     }
+
 }

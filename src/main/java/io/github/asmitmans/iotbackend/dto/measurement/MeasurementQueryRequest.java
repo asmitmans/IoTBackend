@@ -5,9 +5,13 @@ import java.time.Instant;
 public class MeasurementQueryRequest {
 
     private Long deviceId;
+
     private Instant from;
+
     private Instant to;
+
     private int page = 0;
+
     private int size = 50;
 
     public MeasurementQueryRequest() {
@@ -52,4 +56,5 @@ public class MeasurementQueryRequest {
     public void setSize(int size) {
         this.size = size;
     }
+
 }

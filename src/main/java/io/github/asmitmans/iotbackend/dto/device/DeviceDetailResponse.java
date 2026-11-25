@@ -5,13 +5,21 @@ import java.util.UUID;
 public class DeviceDetailResponse {
 
     private UUID publicId;
+
     private String serialNumber;
+
     private String name;
+
     private String status;
+
     private Long deviceModelId;
+
     private String deviceModelName;
+
     private UUID locationId;
+
     private boolean configPending;
+
     private boolean commandPending;
 
     public DeviceDetailResponse() {
@@ -88,4 +96,5 @@ public class DeviceDetailResponse {
     public void setCommandPending(boolean commandPending) {
         this.commandPending = commandPending;
     }
+
 }

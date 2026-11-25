@@ -5,6 +5,7 @@ import java.time.Instant;
 public class JoinCodeResponse {
 
     private String joinCode;
+
     private Instant expiresAt;
 
     public JoinCodeResponse() {
@@ -30,4 +31,5 @@ public class JoinCodeResponse {
     public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
+
 }

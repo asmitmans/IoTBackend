@@ -26,11 +26,16 @@ import java.util.stream.Collectors;
 public class DeviceModelService {
 
     private final DeviceModelRepository deviceModelRepository;
+
     private final MeasurementTypeRepository measurementTypeRepository;
+
     private final CommandTypeRepository commandTypeRepository;
+
     private final DeviceRepository deviceRepository;
 
-    public DeviceModelService(DeviceModelRepository deviceModelRepository, MeasurementTypeRepository measurementTypeRepository, CommandTypeRepository commandTypeRepository, DeviceRepository deviceRepository) {
+    public DeviceModelService(DeviceModelRepository deviceModelRepository,
+            MeasurementTypeRepository measurementTypeRepository, CommandTypeRepository commandTypeRepository,
+            DeviceRepository deviceRepository) {
         this.deviceModelRepository = deviceModelRepository;
         this.measurementTypeRepository = measurementTypeRepository;
         this.commandTypeRepository = commandTypeRepository;
@@ -39,10 +44,7 @@ public class DeviceModelService {
 
     @Transactional(readOnly = true)
     public List<DeviceModelListResponse> getAll() {
-        return deviceModelRepository.findAll()
-                .stream()
-                .map(this::toListResponse)
-                .collect(Collectors.toList());
+        return deviceModelRepository.findAll().stream().map(this::toListResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -52,10 +54,9 @@ public class DeviceModelService {
 
     @Transactional
     public DeviceModelDetailResponse create(DeviceModelRequest request) {
-        deviceModelRepository.findByName(request.getName())
-                .ifPresent(m -> {
-                    throw new ConflictException("DeviceModel with name '" + request.getName() + "' already exists");
-                });
+        deviceModelRepository.findByName(request.getName()).ifPresent(m -> {
+            throw new ConflictException("DeviceModel with name '" + request.getName() + "' already exists");
+        });
 
         DeviceModel entity = new DeviceModel();
         entity.setName(request.getName());
@@ -98,7 +99,7 @@ public class DeviceModelService {
 
     private DeviceModel findOrThrow(Long id) {
         return deviceModelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("DeviceModel not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("DeviceModel not found"));
     }
 
     private DeviceModelListResponse toListResponse(DeviceModel entity) {
@@ -113,27 +114,23 @@ public class DeviceModelService {
         r.setId(entity.getId());
         r.setName(entity.getName());
 
-        r.setMeasurementTypes(entity.getMeasurementTypes().stream()
-                .map(mt -> {
-                    MeasurementTypeResponse mtr = new MeasurementTypeResponse();
-                    mtr.setId(mt.getId());
-                    mtr.setName(mt.getName());
-                    mtr.setSiUnit(mt.getSiUnit());
-                    mtr.setCategory(mt.getCategory());
-                    mtr.setDataType(mt.getDataType());
-                    return mtr;
-                })
-                .collect(Collectors.toSet()));
+        r.setMeasurementTypes(entity.getMeasurementTypes().stream().map(mt -> {
+            MeasurementTypeResponse mtr = new MeasurementTypeResponse();
+            mtr.setId(mt.getId());
+            mtr.setName(mt.getName());
+            mtr.setSiUnit(mt.getSiUnit());
+            mtr.setCategory(mt.getCategory());
+            mtr.setDataType(mt.getDataType());
+            return mtr;
+        }).collect(Collectors.toSet()));
 
-        r.setCommandTypes(entity.getCommandTypes().stream()
-                .map(ct -> {
-                    CommandTypeResponse ctr = new CommandTypeResponse();
-                    ctr.setId(ct.getId());
-                    ctr.setName(ct.getName());
-                    ctr.setDescription(ct.getDescription());
-                    return ctr;
-                })
-                .collect(Collectors.toSet()));
+        r.setCommandTypes(entity.getCommandTypes().stream().map(ct -> {
+            CommandTypeResponse ctr = new CommandTypeResponse();
+            ctr.setId(ct.getId());
+            ctr.setName(ct.getName());
+            ctr.setDescription(ct.getDescription());
+            return ctr;
+        }).collect(Collectors.toSet()));
 
         return r;
     }

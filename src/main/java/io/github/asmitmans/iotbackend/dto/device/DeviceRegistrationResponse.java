@@ -5,10 +5,15 @@ import java.util.UUID;
 public class DeviceRegistrationResponse {
 
     private UUID publicId;
+
     private String serialNumber;
+
     private String name;
+
     private String status;
+
     private String apiKeyPrefix;
+
     private String apiKeyPlain;
 
     public DeviceRegistrationResponse() {
@@ -61,4 +66,5 @@ public class DeviceRegistrationResponse {
     public void setApiKeyPlain(String apiKeyPlain) {
         this.apiKeyPlain = apiKeyPlain;
     }
+
 }

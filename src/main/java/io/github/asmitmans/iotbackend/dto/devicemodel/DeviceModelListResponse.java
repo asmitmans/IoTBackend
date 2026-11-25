@@ -3,6 +3,7 @@ package io.github.asmitmans.iotbackend.dto.devicemodel;
 public class DeviceModelListResponse {
 
     private Long id;
+
     private String name;
 
     public DeviceModelListResponse() {
@@ -23,4 +24,5 @@ public class DeviceModelListResponse {
     public void setName(String name) {
         this.name = name;
     }
+
 }

@@ -14,4 +14,5 @@ public class AccountJoinRequest {
     public void setJoinCode(String joinCode) {
         this.joinCode = joinCode;
     }
+
 }

@@ -18,4 +18,5 @@ public interface AccountMembershipRepository extends JpaRepository<AccountMember
     boolean existsByUserIdAndAccountId(Integer userId, Long accountId);
 
     long countByAccountIdAndAccountRole(Long accountId, AccountRole accountRole);
+
 }

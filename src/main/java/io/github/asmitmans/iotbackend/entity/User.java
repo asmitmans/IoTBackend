@@ -32,11 +32,8 @@ public class User extends AuditableEntity {
     private String surnames;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     public User() {
@@ -108,8 +105,10 @@ public class User extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof User other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 
@@ -117,4 +116,5 @@ public class User extends AuditableEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

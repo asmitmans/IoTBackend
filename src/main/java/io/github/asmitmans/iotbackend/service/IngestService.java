@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class IngestService {
 
     private final MeasurementRepository measurementRepository;
+
     private final ObjectMapper objectMapper;
 
     public IngestService(MeasurementRepository measurementRepository, ObjectMapper objectMapper) {
@@ -26,7 +27,8 @@ public class IngestService {
 
         try {
             objectMapper.readTree(request.getPayload());
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid JSON payload: " + e.getOriginalMessage());
         }
 
@@ -45,4 +47,5 @@ public class IngestService {
 
         return response;
     }
+
 }

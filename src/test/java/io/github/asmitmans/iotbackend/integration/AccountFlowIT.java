@@ -30,8 +30,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         String farmToken = createAccount(token, "Farm").get("token").asText();
         String homeToken = createAccount(token, "Home").get("token").asText();
 
-        assertThat(postJson("/api/v1/locations", homeToken, Map.of("name", "Barn")))
-                .hasStatus(HttpStatus.CREATED);
+        assertThat(postJson("/api/v1/locations", homeToken, Map.of("name", "Barn"))).hasStatus(HttpStatus.CREATED);
         assertThat(body(get("/api/v1/locations", farmToken))).isEmpty();
     }
 
@@ -55,7 +54,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         String bobToken = join(loginToken(registerUser("bob")), joinCode(farm)).get("token").asText();
 
         assertThat(post("/api/v1/accounts/" + farm.accountId() + "/join-code", bobToken))
-                .hasStatus(HttpStatus.FORBIDDEN);
+            .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -66,11 +65,11 @@ public class AccountFlowIT extends AbstractIntegrationTest {
 
         for (int i = 0; i < 5; i++) {
             assertThat(postJson("/api/v1/accounts/join", bobToken, Map.of("joinCode", "WRONGCODE1234")))
-                    .hasStatus(HttpStatus.FORBIDDEN);
+                .hasStatus(HttpStatus.FORBIDDEN);
         }
 
         assertThat(postJson("/api/v1/accounts/join", bobToken, Map.of("joinCode", validCode)))
-                .hasStatus(HttpStatus.TOO_MANY_REQUESTS);
+            .hasStatus(HttpStatus.TOO_MANY_REQUESTS);
     }
 
     // ---------- switch ----------
@@ -93,8 +92,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         Owned farm = accountOwnedBy("alice");
         String bobToken = loginToken(registerUser("bob"));
 
-        assertThat(post("/api/v1/accounts/" + farm.accountId() + "/switch", bobToken))
-                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(post("/api/v1/accounts/" + farm.accountId() + "/switch", bobToken)).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     // ---------- promote, leave, remove ----------
@@ -104,7 +102,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         Owned farm = accountOwnedBy("alice");
 
         assertThat(post("/api/v1/accounts/" + farm.accountId() + "/leave", farm.ownerToken()))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -114,9 +112,9 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         join(loginToken(bob), joinCode(farm));
 
         assertThat(post("/api/v1/accounts/" + farm.accountId() + "/members/" + bob + "/promote", farm.ownerToken()))
-                .hasStatus(HttpStatus.NO_CONTENT);
+            .hasStatus(HttpStatus.NO_CONTENT);
         assertThat(post("/api/v1/accounts/" + farm.accountId() + "/leave", farm.ownerToken()))
-                .hasStatus(HttpStatus.NO_CONTENT);
+            .hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(body(get("/api/v1/accounts/mine", loginToken(farm.owner())))).isEmpty();
     }
@@ -131,7 +129,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
         assertThat(get("/api/v1/locations", bobToken)).hasStatusOk();
 
         assertThat(delete("/api/v1/accounts/" + farm.accountId() + "/members/" + bob, farm.ownerToken()))
-                .hasStatus(HttpStatus.NO_CONTENT);
+            .hasStatus(HttpStatus.NO_CONTENT);
 
         assertThat(get("/api/v1/locations", bobToken)).hasStatus(HttpStatus.FORBIDDEN);
     }
@@ -144,7 +142,7 @@ public class AccountFlowIT extends AbstractIntegrationTest {
 
         assertThat(get("/api/v1/accounts/mine", adminToken)).hasStatus(HttpStatus.FORBIDDEN);
         assertThat(postJson("/api/v1/accounts", adminToken, Map.of("name", "Admin account")))
-                .hasStatus(HttpStatus.FORBIDDEN);
+            .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     // ---------- authentication ----------
@@ -158,4 +156,5 @@ public class AccountFlowIT extends AbstractIntegrationTest {
     void request_withInvalidToken_returns401() {
         assertThat(get("/api/v1/accounts/mine", "not-a-jwt")).hasStatus(HttpStatus.UNAUTHORIZED);
     }
+
 }

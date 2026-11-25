@@ -24,40 +24,40 @@ public class CommandTypeServiceTest {
     @Mock
     private CommandTypeRepository commandTypeRepository;
 
-@Mock
-private DeviceModelRepository deviceModelRepository;
+    @Mock
+    private DeviceModelRepository deviceModelRepository;
 
-private CommandTypeService service;
+    private CommandTypeService service;
 
-private CommandType entity;
+    private CommandType entity;
 
-@BeforeEach
-void setUp() {
-    service = new CommandTypeService(commandTypeRepository, deviceModelRepository);
-    entity = new CommandType();
-    entity.setId(ID);
-}
+    @BeforeEach
+    void setUp() {
+        service = new CommandTypeService(commandTypeRepository, deviceModelRepository);
+        entity = new CommandType();
+        entity.setId(ID);
+    }
 
-// ---------- delete() ----------
+    // ---------- delete() ----------
 
-@Test
-void delete_whenNotInUse_deletesIt() {
-    when(commandTypeRepository.findById(ID)).thenReturn(Optional.of(entity));
+    @Test
+    void delete_whenNotInUse_deletesIt() {
+        when(commandTypeRepository.findById(ID)).thenReturn(Optional.of(entity));
 
-    service.delete(ID);
+        service.delete(ID);
 
-    verify(commandTypeRepository).delete(entity);
-}
+        verify(commandTypeRepository).delete(entity);
+    }
 
-@Test
-void delete_whenInUse_throwsConflictAndDoesNotDelete() {
-    when(commandTypeRepository.findById(ID)).thenReturn(Optional.of(entity));
-    when(deviceModelRepository.existsByCommandTypesId(ID)).thenReturn(true);
+    @Test
+    void delete_whenInUse_throwsConflictAndDoesNotDelete() {
+        when(commandTypeRepository.findById(ID)).thenReturn(Optional.of(entity));
+        when(deviceModelRepository.existsByCommandTypesId(ID)).thenReturn(true);
 
-    assertThatThrownBy(() -> service.delete(ID))
-            .isInstanceOf(ConflictException.class)
+        assertThatThrownBy(() -> service.delete(ID)).isInstanceOf(ConflictException.class)
             .hasMessage("Command type is used by device models; remove it from them first");
 
-    verify(commandTypeRepository, never()).delete(any());
-}
+        verify(commandTypeRepository, never()).delete(any());
+    }
+
 }

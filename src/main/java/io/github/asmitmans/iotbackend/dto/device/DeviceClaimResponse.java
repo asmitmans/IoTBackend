@@ -3,7 +3,9 @@ package io.github.asmitmans.iotbackend.dto.device;
 public class DeviceClaimResponse {
 
     private String serialNumber;
+
     private String status;
+
     private String apiKeyPlain;
 
     public DeviceClaimResponse() {
@@ -32,4 +34,5 @@ public class DeviceClaimResponse {
     public void setApiKeyPlain(String apiKeyPlain) {
         this.apiKeyPlain = apiKeyPlain;
     }
+
 }

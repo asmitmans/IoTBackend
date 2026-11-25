@@ -17,7 +17,8 @@ public class ApiKeyServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Low BCrypt cost keeps the test fast; the cost factor does not change hash/verify semantics.
+        // Low BCrypt cost keeps the test fast; the cost factor does not change
+        // hash/verify semantics.
         service = new ApiKeyService(new BCryptPasswordEncoder(4));
     }
 
@@ -51,9 +52,7 @@ public class ApiKeyServiceTest {
     void extractPrefix_returnsTheFirst16Chars() {
         String key = service.generate(DEVICE_PREFIX);
 
-        assertThat(service.extractPrefix(key))
-                .hasSize(16)
-                .isEqualTo(key.substring(0, 16));
+        assertThat(service.extractPrefix(key)).hasSize(16).isEqualTo(key.substring(0, 16));
     }
 
     @Test
@@ -88,4 +87,5 @@ public class ApiKeyServiceTest {
 
         assertThat(service.verify(service.generate(DEVICE_PREFIX), hash)).isFalse();
     }
+
 }

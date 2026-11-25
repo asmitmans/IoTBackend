@@ -27,7 +27,9 @@ import static org.mockito.Mockito.*;
 public class JoinCodeServiceTest {
 
     private static final String ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
+
     private static final Clock FIXED_CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
 
     @Mock
@@ -40,7 +42,8 @@ public class JoinCodeServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository, FIXED_CLOCK);
+        service = new JoinCodeService(new JoinCodeProperties(ALPHABET, 8, 4, 24), apiKeyService, accountRepository,
+                FIXED_CLOCK);
     }
 
     // ---------- issue() ----------
@@ -95,7 +98,8 @@ public class JoinCodeServiceTest {
 
     @Test
     void issue_honorsCustomProperties() {
-        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService, accountRepository, FIXED_CLOCK);
+        JoinCodeService custom = new JoinCodeService(new JoinCodeProperties("AB", 6, 2, 1), apiKeyService,
+                accountRepository, FIXED_CLOCK);
         when(apiKeyService.hash(anyString())).thenReturn("HASH");
 
         JoinCodeIssuance issuance = custom.issue();
@@ -122,9 +126,8 @@ public class JoinCodeServiceTest {
     void resolveAndVerify_throwsAccessDeniedWhenNoAccountHasThatPrefix() {
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Invalid join code");
+        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234")).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Invalid join code");
     }
 
     @Test
@@ -133,9 +136,8 @@ public class JoinCodeServiceTest {
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(false);
 
-        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Invalid join code");
+        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234")).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Invalid join code");
     }
 
     @Test
@@ -143,8 +145,7 @@ public class JoinCodeServiceTest {
         Account account = accountWithJoinCode(null, NOW.plus(1, ChronoUnit.HOURS));
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
 
-        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
-                .isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234")).isInstanceOf(AccessDeniedException.class);
 
         verify(apiKeyService, never()).verify(any(), any());
     }
@@ -168,9 +169,8 @@ public class JoinCodeServiceTest {
         when(accountRepository.findByJoinCodePrefix("ABCD")).thenReturn(List.of(account));
         when(apiKeyService.verify("ABCD1234", "HASH")).thenReturn(true);
 
-        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessage("Join code has expired");
+        assertThatThrownBy(() -> service.resolveAndVerify("ABCD1234")).isInstanceOf(ConflictException.class)
+            .hasMessage("Join code has expired");
     }
 
     @Test
@@ -188,9 +188,8 @@ public class JoinCodeServiceTest {
     void resolveAndVerify_usesTheWholeCodeAsPrefixWhenItIsShorterThanThePrefixLength() {
         when(accountRepository.findByJoinCodePrefix("AB")).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.resolveAndVerify("AB"))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Invalid join code");
+        assertThatThrownBy(() -> service.resolveAndVerify("AB")).isInstanceOf(AccessDeniedException.class)
+            .hasMessage("Invalid join code");
 
         verify(accountRepository).findByJoinCodePrefix("AB");
     }
@@ -201,4 +200,5 @@ public class JoinCodeServiceTest {
         account.setJoinCodeExpiresAt(expiresAt);
         return account;
     }
+
 }

@@ -48,4 +48,5 @@ public class MeasurementTypeRequest {
     public void setDataType(String dataType) {
         this.dataType = dataType;
     }
+
 }

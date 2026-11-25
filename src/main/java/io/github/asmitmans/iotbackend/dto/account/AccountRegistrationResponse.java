@@ -5,7 +5,9 @@ import java.util.UUID;
 public class AccountRegistrationResponse {
 
     private UUID publicId;
+
     private String name;
+
     private String token;
 
     public AccountRegistrationResponse() {
@@ -40,4 +42,5 @@ public class AccountRegistrationResponse {
     public void setToken(String token) {
         this.token = token;
     }
+
 }

@@ -21,22 +21,44 @@ public class Location extends PubliclyIdentifiableEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Account getAccount() { return account; }
-    public void setAccount(Account account) { this.account = account; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Location getParent() { return parent; }
-    public void setParent(Location parent) { this.parent = parent; }
+    public Account getAccount() {
+        return account;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
+    public Location getParent() {
+        return parent;
+    }
+
+    public void setParent(Location parent) {
+        this.parent = parent;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Location other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Location other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 

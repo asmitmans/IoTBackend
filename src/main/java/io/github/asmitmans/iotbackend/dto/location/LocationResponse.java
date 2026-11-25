@@ -5,7 +5,9 @@ import java.util.UUID;
 public class LocationResponse {
 
     private UUID publicId;
+
     private String name;
+
     private UUID parentPublicId;
 
     public LocationResponse() {
@@ -34,4 +36,5 @@ public class LocationResponse {
     public void setParentPublicId(UUID parentPublicId) {
         this.parentPublicId = parentPublicId;
     }
+
 }

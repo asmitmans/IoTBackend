@@ -49,7 +49,8 @@ public class MeasurementTypeController {
     @Operation(summary = "Update measurement type", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MeasurementTypeResponse> update(@PathVariable Long id, @RequestBody @Valid MeasurementTypeRequest request) {
+    public ResponseEntity<MeasurementTypeResponse> update(@PathVariable Long id,
+            @RequestBody @Valid MeasurementTypeRequest request) {
         return ResponseEntity.ok(measurementTypeService.update(id, request));
     }
 
@@ -60,4 +61,5 @@ public class MeasurementTypeController {
         measurementTypeService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

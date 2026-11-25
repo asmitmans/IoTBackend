@@ -5,12 +5,17 @@ import java.time.Instant;
 public class DeviceConfigStatusResponse {
 
     private String key;
+
     private String desiredValue;
+
     private String reportedValue;
+
     private String status;
+
     private Instant updatedAt;
 
-    public DeviceConfigStatusResponse() {}
+    public DeviceConfigStatusResponse() {
+    }
 
     public String getKey() {
         return key;
@@ -51,4 +56,5 @@ public class DeviceConfigStatusResponse {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
+
 }

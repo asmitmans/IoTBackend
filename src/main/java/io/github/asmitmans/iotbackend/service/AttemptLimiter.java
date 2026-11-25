@@ -11,24 +11,29 @@ import java.time.Instant;
 public abstract class AttemptLimiter {
 
     private final int maxAttempts;
+
     private final Duration window;
+
     private final Duration lockout;
+
     private final String blockedMessage;
+
     private final Clock clock;
+
     private final Cache<String, AttemptState> attempts;
 
-    protected AttemptLimiter(int maxAttempts, Duration window, Duration lockout,
-                             String blockedMessage, Clock clock) {
+    protected AttemptLimiter(int maxAttempts, Duration window, Duration lockout, String blockedMessage, Clock clock) {
         this.maxAttempts = maxAttempts;
         this.window = window;
         this.lockout = lockout;
         this.blockedMessage = blockedMessage;
         this.clock = clock;
-        // Eviction only bounds memory; the lockout rules below are evaluated with the Clock.
+        // Eviction only bounds memory; the lockout rules below are evaluated with the
+        // Clock.
         this.attempts = Caffeine.newBuilder()
-                .expireAfterWrite(window.compareTo(lockout) >= 0 ? window : lockout)
-                .maximumSize(10_000)
-                .build();
+            .expireAfterWrite(window.compareTo(lockout) >= 0 ? window : lockout)
+            .maximumSize(10_000)
+            .build();
     }
 
     public void checkAllowed(String key) {
@@ -73,4 +78,5 @@ public abstract class AttemptLimiter {
             return lockedUntil != null && now.isBefore(lockedUntil);
         }
     }
+
 }

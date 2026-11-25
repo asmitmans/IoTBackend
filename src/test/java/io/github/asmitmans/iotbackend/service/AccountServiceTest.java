@@ -123,8 +123,8 @@ public class AccountServiceTest {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.create("ghost", requestNamed("Finca")))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("User not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("User not found");
 
         verifyNoInteractions(accountRepository, accountMembershipRepository, scopedTokenService);
     }
@@ -136,19 +136,16 @@ public class AccountServiceTest {
         givenAliceExists();
         UUID fincaId = UUID.randomUUID();
         UUID huertoId = UUID.randomUUID();
-        when(accountMembershipRepository.findByUserId(1)).thenReturn(List.of(
-                new AccountMembership(alice, accountNamed("Finca", fincaId), AccountRole.OWNER),
-                new AccountMembership(alice, accountNamed("Huerto", huertoId), AccountRole.MEMBER)));
+        when(accountMembershipRepository.findByUserId(1))
+            .thenReturn(List.of(new AccountMembership(alice, accountNamed("Finca", fincaId), AccountRole.OWNER),
+                    new AccountMembership(alice, accountNamed("Huerto", huertoId), AccountRole.MEMBER)));
 
         List<AccountMembershipResponse> result = service.getMine("alice");
 
         assertThat(result)
-                .extracting(AccountMembershipResponse::getPublicId,
-                        AccountMembershipResponse::getName,
-                        AccountMembershipResponse::getAccountRole)
-                .containsExactly(
-                        tuple(fincaId, "Finca", AccountRole.OWNER),
-                        tuple(huertoId, "Huerto", AccountRole.MEMBER));
+            .extracting(AccountMembershipResponse::getPublicId, AccountMembershipResponse::getName,
+                    AccountMembershipResponse::getAccountRole)
+            .containsExactly(tuple(fincaId, "Finca", AccountRole.OWNER), tuple(huertoId, "Huerto", AccountRole.MEMBER));
     }
 
     @Test
@@ -163,9 +160,8 @@ public class AccountServiceTest {
     void getMine_unknownUser_throwsNotFound() {
         when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.getMine("ghost"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("User not found");
+        assertThatThrownBy(() -> service.getMine("ghost")).isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("User not found");
 
         verifyNoInteractions(accountMembershipRepository);
     }
@@ -195,4 +191,5 @@ public class AccountServiceTest {
         ReflectionTestUtils.setField(account, "publicId", publicId);
         return account;
     }
+
 }

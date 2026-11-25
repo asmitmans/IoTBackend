@@ -8,8 +8,8 @@ import jakarta.persistence.PrePersist;
 import java.util.UUID;
 
 /**
- * Base for entities exposed externally via an opaque UUID (public_id)
- * while keeping an internal BIGINT PK for joins/FKs. See Account, Device.
+ * Base for entities exposed externally via an opaque UUID (public_id) while keeping an
+ * internal BIGINT PK for joins/FKs. See Account, Device.
  */
 @MappedSuperclass
 public abstract class PubliclyIdentifiableEntity extends AuditableEntity {
@@ -27,4 +27,5 @@ public abstract class PubliclyIdentifiableEntity extends AuditableEntity {
     public UUID getPublicId() {
         return publicId;
     }
+
 }

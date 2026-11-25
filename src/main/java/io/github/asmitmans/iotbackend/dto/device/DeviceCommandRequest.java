@@ -27,4 +27,5 @@ public class DeviceCommandRequest {
     public void setPayload(String payload) {
         this.payload = payload;
     }
+
 }

@@ -50,7 +50,8 @@ public class DeviceModelController {
     @Operation(summary = "Update device model", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DeviceModelDetailResponse> update(@PathVariable Long id, @RequestBody @Valid DeviceModelRequest request) {
+    public ResponseEntity<DeviceModelDetailResponse> update(@PathVariable Long id,
+            @RequestBody @Valid DeviceModelRequest request) {
         return ResponseEntity.ok(deviceModelService.update(id, request));
     }
 
@@ -61,4 +62,5 @@ public class DeviceModelController {
         deviceModelService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

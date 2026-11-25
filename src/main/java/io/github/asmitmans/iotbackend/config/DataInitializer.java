@@ -22,58 +22,59 @@ import java.util.Set;
 @Profile("dev")
 public class DataInitializer implements ApplicationRunner {
 
-  private final UserRepository userRepository;
-  private final RoleRepository roleRepository;
-  private final AccountRepository accountRepository;
-  private final AccountMembershipRepository accountMembershipRepository;
-  private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-  @Value("${seed.admin.password}")
-  private String adminPassword;
+    private final RoleRepository roleRepository;
 
-  @Value("${seed.user.password}")
-  private String userPassword;
+    private final AccountRepository accountRepository;
 
-  public DataInitializer(UserRepository userRepository,
-                         RoleRepository roleRepository,
-                         AccountRepository accountRepository,
-                         AccountMembershipRepository accountMembershipRepository,
-                         PasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
-    this.roleRepository = roleRepository;
-    this.accountRepository = accountRepository;
-    this.accountMembershipRepository = accountMembershipRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
+    private final AccountMembershipRepository accountMembershipRepository;
 
-  @Override
-  public void run(ApplicationArguments args) {
-    // Platform admin: no account membership (operates across accounts, never inside one).
-    createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN", null);
-    createUserIfNotExists("user", userPassword, "ROLE_USER", AccountRole.OWNER);
-  }
+    private final PasswordEncoder passwordEncoder;
 
+    @Value("${seed.admin.password}")
+    private String adminPassword;
 
-  private void createUserIfNotExists(String username,
-                                     String rawPassword,
-                                     String roleName,
-                                     AccountRole accountRole) {
-    if (userRepository.findByUsername(username).isPresent()) return;
+    @Value("${seed.user.password}")
+    private String userPassword;
 
-    Role role = roleRepository.findByName(roleName)
-                              .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
-
-    User user = new User();
-    user.setUsername(username);
-    user.setPassword(passwordEncoder.encode(rawPassword));
-    user.setEnabled(true);
-    user.setRoles(Set.of(role));
-
-    user = userRepository.save(user);
-
-    if (accountRole != null) {
-      Account account = accountRepository.findAll().getFirst();
-      accountMembershipRepository.save(new AccountMembership(user, account, accountRole));
+    public DataInitializer(UserRepository userRepository, RoleRepository roleRepository,
+            AccountRepository accountRepository, AccountMembershipRepository accountMembershipRepository,
+            PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.accountRepository = accountRepository;
+        this.accountMembershipRepository = accountMembershipRepository;
+        this.passwordEncoder = passwordEncoder;
     }
-  }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        // Platform admin: no account membership (operates across accounts, never inside
+        // one).
+        createUserIfNotExists("admin", adminPassword, "ROLE_ADMIN", null);
+        createUserIfNotExists("user", userPassword, "ROLE_USER", AccountRole.OWNER);
+    }
+
+    private void createUserIfNotExists(String username, String rawPassword, String roleName, AccountRole accountRole) {
+        if (userRepository.findByUsername(username).isPresent())
+            return;
+
+        Role role = roleRepository.findByName(roleName)
+            .orElseThrow(() -> new IllegalStateException("Role not found: " + roleName));
+
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setEnabled(true);
+        user.setRoles(Set.of(role));
+
+        user = userRepository.save(user);
+
+        if (accountRole != null) {
+            Account account = accountRepository.findAll().getFirst();
+            accountMembershipRepository.save(new AccountMembership(user, account, accountRole));
+        }
+    }
+
 }

@@ -14,7 +14,9 @@ public class UserRegistrationRequest {
     private String password;
 
     private String alias;
+
     private String names;
+
     private String surnames;
 
     public String getUsername() {
@@ -56,4 +58,5 @@ public class UserRegistrationRequest {
     public void setSurnames(String surnames) {
         this.surnames = surnames;
     }
+
 }

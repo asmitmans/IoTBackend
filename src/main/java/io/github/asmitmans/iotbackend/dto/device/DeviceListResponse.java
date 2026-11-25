@@ -5,11 +5,17 @@ import java.util.UUID;
 public class DeviceListResponse {
 
     private UUID publicId;
+
     private String serialNumber;
+
     private String name;
+
     private String status;
+
     private Long deviceModelId;
+
     private String deviceModelName;
+
     private UUID locationId;
 
     public DeviceListResponse() {
@@ -70,4 +76,5 @@ public class DeviceListResponse {
     public void setLocationId(UUID locationId) {
         this.locationId = locationId;
     }
+
 }

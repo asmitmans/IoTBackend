@@ -19,19 +19,17 @@ public class ScopedTokenService {
     }
 
     /**
-     * Issues a JWT scoped to the given account. Must be called inside the
-     * caller's transaction: user.getRoles() is lazy-loaded.
+     * Issues a JWT scoped to the given account. Must be called inside the caller's
+     * transaction: user.getRoles() is lazy-loaded.
      */
     public String issue(User user, Account account) {
-        UserPrincipal principal = new UserPrincipal(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
+        UserPrincipal principal = new UserPrincipal(user.getUsername(), user.getPassword(), user.isEnabled(),
                 account.getPublicId(),
-                user.getRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority(role.getName()))
-                        .collect(Collectors.toSet())
-                );
+                user.getRoles()
+                    .stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .collect(Collectors.toSet()));
         return jwtService.generateToken(principal);
     }
+
 }

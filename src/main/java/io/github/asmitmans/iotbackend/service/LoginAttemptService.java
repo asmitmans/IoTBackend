@@ -9,7 +9,8 @@ import java.time.Duration;
 public class LoginAttemptService extends AttemptLimiter {
 
     public LoginAttemptService(Clock clock) {
-        super(5, Duration.ofMinutes(1), Duration.ofMinutes(1),
-                "Too many failed login attempts. Try again in a minute.", clock);
+        super(5, Duration.ofMinutes(1), Duration.ofMinutes(1), "Too many failed login attempts. Try again in a minute.",
+                clock);
     }
+
 }

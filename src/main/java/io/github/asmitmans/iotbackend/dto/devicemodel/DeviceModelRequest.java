@@ -10,6 +10,7 @@ public class DeviceModelRequest {
     private String name;
 
     private Set<Long> measurementTypeIds;
+
     private Set<Long> commandTypeIds;
 
     public DeviceModelRequest() {
@@ -38,4 +39,5 @@ public class DeviceModelRequest {
     public void setCommandTypeIds(Set<Long> commandTypeIds) {
         this.commandTypeIds = commandTypeIds;
     }
+
 }

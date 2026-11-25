@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DeviceFlowIT extends AbstractIntegrationTest {
 
     private String adminToken;
+
     private long modelId;
 
     @BeforeEach
@@ -44,7 +45,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         claimDevice(serial(device));
 
         assertThat(postJson("/api/v1/devices/claim", null, Map.of("serialNumber", serial(device))))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     // ---------- device authentication (API key) ----------
@@ -74,7 +75,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         Owned farm = accountOwnedBy("alice");
 
         assertThat(postJson("/api/v1/devices", farm.ownerToken(), Map.of("deviceModelId", modelId)))
-                .hasStatus(HttpStatus.FORBIDDEN);
+            .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -96,8 +97,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         JsonNode device = registerDevice(adminToken, modelId);
         enrollDevice(farm.ownerToken(), serial(device));
 
-        assertThat(get("/api/v1/devices/" + publicId(device), other.ownerToken()))
-                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(get("/api/v1/devices/" + publicId(device), other.ownerToken())).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(body(get("/api/v1/devices", other.ownerToken())).get("content")).isEmpty();
     }
 
@@ -110,7 +110,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
 
         assertThat(postJson("/api/v1/devices/enroll", other.ownerToken(),
                 Map.of("serialNumber", serial(device), "name", "Stolen")))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     // ---------- revocation ----------
@@ -123,9 +123,9 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         delete("/api/v1/accounts/" + farm.accountId() + "/members/" + bob, farm.ownerToken());
         JsonNode device = registerDevice(adminToken, modelId);
 
-        assertThat(postJson("/api/v1/devices/enroll", bobToken,
-                Map.of("serialNumber", serial(device), "name", "Sensor")))
-                .hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(
+                postJson("/api/v1/devices/enroll", bobToken, Map.of("serialNumber", serial(device), "name", "Sensor")))
+            .hasStatus(HttpStatus.FORBIDDEN);
     }
 
     // ---------- desired config (user side) ----------
@@ -137,7 +137,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
 
         assertThat(putJson("/api/v1/devices/" + id + "/config", farm.ownerToken(),
                 Map.of("desired", Map.of("interval", "60"))))
-                .hasStatusOk();
+            .hasStatusOk();
 
         JsonNode status = body(get("/api/v1/devices/" + id + "/config/status", farm.ownerToken()));
         assertThat(status).hasSize(1);
@@ -153,7 +153,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         String id = activeDeviceOf(farm);
 
         assertThat(putJson("/api/v1/devices/" + id + "/config", farm.ownerToken(), Map.of("desired", Map.of())))
-                .hasStatus(HttpStatus.BAD_REQUEST);
+            .hasStatus(HttpStatus.BAD_REQUEST);
     }
 
     // ---------- commands (user side) ----------
@@ -164,7 +164,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         String id = activeDeviceOf(farm);
 
         assertThat(postJson("/api/v1/devices/" + id + "/commands", farm.ownerToken(), Map.of("type", "REBOOT")))
-                .hasStatus(HttpStatus.ACCEPTED);
+            .hasStatus(HttpStatus.ACCEPTED);
 
         assertThat(body(get("/api/v1/devices/" + id, farm.ownerToken())).get("commandPending").asBoolean()).isTrue();
     }
@@ -174,7 +174,7 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
         JsonNode device = registerDevice(adminToken, modelId);
 
         assertThat(postJson("/api/v1/devices/" + publicId(device) + "/commands", adminToken, Map.of("type", "REBOOT")))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     // ---------- isolation for config and commands ----------
@@ -187,11 +187,10 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
 
         assertThat(putJson("/api/v1/devices/" + id + "/config", other.ownerToken(),
                 Map.of("desired", Map.of("interval", "60"))))
-                .hasStatus(HttpStatus.NOT_FOUND);
-        assertThat(get("/api/v1/devices/" + id + "/config/status", other.ownerToken()))
-                .hasStatus(HttpStatus.NOT_FOUND);
+            .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(get("/api/v1/devices/" + id + "/config/status", other.ownerToken())).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(postJson("/api/v1/devices/" + id + "/commands", other.ownerToken(), Map.of("type", "REBOOT")))
-                .hasStatus(HttpStatus.NOT_FOUND);
+            .hasStatus(HttpStatus.NOT_FOUND);
     }
 
     // ---------- catalog ----------
@@ -225,4 +224,5 @@ public class DeviceFlowIT extends AbstractIntegrationTest {
     private static String publicId(JsonNode device) {
         return device.get("publicId").asText();
     }
+
 }

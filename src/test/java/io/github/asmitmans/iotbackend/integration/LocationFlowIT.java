@@ -37,15 +37,12 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         String barn = createLocation(farm.ownerToken(), "Barn", null).get("publicId").asText();
 
         assertThat(body(get(LOCATIONS, other.ownerToken()))).isEmpty();
-        assertThat(get(LOCATIONS + "/" + barn, other.ownerToken()))
-                .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(get(LOCATIONS + "/" + barn, other.ownerToken())).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(putJson(LOCATIONS + "/" + barn, other.ownerToken(), locationRequest("Renamed", null)))
-                .hasStatus(HttpStatus.NOT_FOUND);
-        assertThat(delete(LOCATIONS + "/" + barn, other.ownerToken()))
-                .hasStatus(HttpStatus.NOT_FOUND);
+            .hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(delete(LOCATIONS + "/" + barn, other.ownerToken())).hasStatus(HttpStatus.NOT_FOUND);
 
-        assertThat(body(get(LOCATIONS + "/" + barn, farm.ownerToken())).get("name").asText())
-                .isEqualTo("Barn");
+        assertThat(body(get(LOCATIONS + "/" + barn, farm.ownerToken())).get("name").asText()).isEqualTo("Barn");
     }
 
     @Test
@@ -55,7 +52,7 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         String barn = createLocation(farm.ownerToken(), "Barn", null).get("publicId").asText();
 
         assertThat(postJson(LOCATIONS, other.ownerToken(), locationRequest("Stall", barn)))
-                .hasStatus(HttpStatus.NOT_FOUND);
+            .hasStatus(HttpStatus.NOT_FOUND);
     }
 
     // ---------- hierarchy rules ----------
@@ -66,7 +63,7 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         createLocation(farm.ownerToken(), "Barn", null);
 
         assertThat(postJson(LOCATIONS, farm.ownerToken(), locationRequest("Barn", null)))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -76,7 +73,7 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         String shed = createLocation(farm.ownerToken(), "Shed", null).get("publicId").asText();
 
         assertThat(putJson(LOCATIONS + "/" + shed, farm.ownerToken(), locationRequest("Barn", null)))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -87,7 +84,7 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         String box = createLocation(farm.ownerToken(), "Box", stall).get("publicId").asText();
 
         assertThat(putJson(LOCATIONS + "/" + barn, farm.ownerToken(), locationRequest("Barn", box)))
-                .hasStatus(HttpStatus.CONFLICT);
+            .hasStatus(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -96,12 +93,9 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         String barn = createLocation(farm.ownerToken(), "Barn", null).get("publicId").asText();
         String stall = createLocation(farm.ownerToken(), "Stall", barn).get("publicId").asText();
 
-        assertThat(delete(LOCATIONS + "/" + barn, farm.ownerToken()))
-                .hasStatus(HttpStatus.CONFLICT);
-        assertThat(delete(LOCATIONS + "/" + stall, farm.ownerToken()))
-                .hasStatus(HttpStatus.NO_CONTENT);
-        assertThat(delete(LOCATIONS + "/" + barn, farm.ownerToken()))
-                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(delete(LOCATIONS + "/" + barn, farm.ownerToken())).hasStatus(HttpStatus.CONFLICT);
+        assertThat(delete(LOCATIONS + "/" + stall, farm.ownerToken())).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(delete(LOCATIONS + "/" + barn, farm.ownerToken())).hasStatus(HttpStatus.NO_CONTENT);
     }
 
     // ---------- helpers ----------
@@ -118,4 +112,5 @@ public class LocationFlowIT extends AbstractIntegrationTest {
         request.put("parentPublicId", parentPublicId);
         return request;
     }
+
 }

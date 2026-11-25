@@ -21,14 +21,15 @@ import java.util.stream.Collectors;
 public class AccountService {
 
     private final AccountRepository accountRepository;
+
     private final UserRepository userRepository;
+
     private final AccountMembershipRepository accountMembershipRepository;
+
     private final ScopedTokenService scopedTokenService;
 
-    public AccountService(AccountRepository accountRepository,
-                          UserRepository userRepository,
-                          AccountMembershipRepository accountMembershipRepository,
-                          ScopedTokenService scopedTokenService) {
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository,
+            AccountMembershipRepository accountMembershipRepository, ScopedTokenService scopedTokenService) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
@@ -38,10 +39,9 @@ public class AccountService {
     @Transactional
     public AccountRegistrationResponse create(String username, AccountRegistrationRequest request) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        String name = (request.getName() != null && !request.getName().isBlank())
-                ? request.getName()
+        String name = (request.getName() != null && !request.getName().isBlank()) ? request.getName()
                 : username + "'s Account";
 
         Account account = new Account(name);
@@ -57,14 +57,13 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<AccountMembershipResponse> getMine(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return accountMembershipRepository.findByUserId(user.getId())
-                .stream()
-                .map(m -> new AccountMembershipResponse(
-                        m.getAccount().getPublicId(),
-                        m.getAccount().getName(),
-                        m.getAccountRole()))
-                .collect(Collectors.toList());
+            .stream()
+            .map(m -> new AccountMembershipResponse(m.getAccount().getPublicId(), m.getAccount().getName(),
+                    m.getAccountRole()))
+            .collect(Collectors.toList());
     }
+
 }

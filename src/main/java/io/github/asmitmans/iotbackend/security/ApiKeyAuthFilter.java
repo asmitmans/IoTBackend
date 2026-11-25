@@ -19,22 +19,21 @@ import java.util.List;
 
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
+
     private final DeviceRepository deviceRepository;
+
     private final ApiKeyService apiKeyService;
+
     private final CacheManager cacheManager;
 
-    public ApiKeyAuthFilter(DeviceRepository deviceRepository,
-                            ApiKeyService apiKeyService,
-                            CacheManager cacheManager) {
+    public ApiKeyAuthFilter(DeviceRepository deviceRepository, ApiKeyService apiKeyService, CacheManager cacheManager) {
         this.deviceRepository = deviceRepository;
         this.apiKeyService = apiKeyService;
         this.cacheManager = cacheManager;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
@@ -63,21 +62,21 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
         }
 
         String prefix = apiKeyService.extractPrefix(apiKey);
-        deviceRepository.findByApiKeyPrefix(prefix).stream()
-                .filter(d -> d.getStatus().equals("ACTIVE"))
-                .filter(d -> apiKeyService.verify(apiKey, d.getApiKeyHash()))
-                .findFirst()
-                .ifPresent(d -> {
-                    cache.put(apiKey, d);
-                    setAuthentication(d, "ROLE_DEVICE");
-                });
+        deviceRepository.findByApiKeyPrefix(prefix)
+            .stream()
+            .filter(d -> d.getStatus().equals("ACTIVE"))
+            .filter(d -> apiKeyService.verify(apiKey, d.getApiKeyHash()))
+            .findFirst()
+            .ifPresent(d -> {
+                cache.put(apiKey, d);
+                setAuthentication(d, "ROLE_DEVICE");
+            });
     }
 
     private void setAuthentication(Object principal, String role) {
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(
-                        principal, null,
-                        List.of(new SimpleGrantedAuthority(role)));
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
+                List.of(new SimpleGrantedAuthority(role)));
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
+
 }

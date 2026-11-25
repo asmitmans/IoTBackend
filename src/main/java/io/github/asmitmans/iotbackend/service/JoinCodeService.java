@@ -16,15 +16,17 @@ import java.time.temporal.ChronoUnit;
 public class JoinCodeService {
 
     private final JoinCodeProperties props;
+
     private final ApiKeyService apiKeyService;
+
     private final AccountRepository accountRepository;
+
     private final Clock clock;
+
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public JoinCodeService(JoinCodeProperties props,
-                           ApiKeyService apiKeyService,
-                           AccountRepository accountRepository,
-                           Clock clock) {
+    public JoinCodeService(JoinCodeProperties props, ApiKeyService apiKeyService, AccountRepository accountRepository,
+            Clock clock) {
         this.props = props;
         this.apiKeyService = apiKeyService;
         this.accountRepository = accountRepository;
@@ -41,15 +43,14 @@ public class JoinCodeService {
     }
 
     public Account resolveAndVerify(String rawCode) {
-        String prefix = rawCode.length() >= props.prefixLength()
-                ? rawCode.substring(0, props.prefixLength())
-                : rawCode;
+        String prefix = rawCode.length() >= props.prefixLength() ? rawCode.substring(0, props.prefixLength()) : rawCode;
 
-        Account account = accountRepository.findByJoinCodePrefix(prefix).stream()
-                                           .filter(a -> a.getJoinCodeHash() != null)
-                                           .filter(a -> apiKeyService.verify(rawCode, a.getJoinCodeHash()))
-                                           .findFirst()
-                                           .orElseThrow(() -> new AccessDeniedException("Invalid join code"));
+        Account account = accountRepository.findByJoinCodePrefix(prefix)
+            .stream()
+            .filter(a -> a.getJoinCodeHash() != null)
+            .filter(a -> apiKeyService.verify(rawCode, a.getJoinCodeHash()))
+            .findFirst()
+            .orElseThrow(() -> new AccessDeniedException("Invalid join code"));
 
         if (Instant.now(clock).isAfter(account.getJoinCodeExpiresAt())) {
             throw new ConflictException("Join code has expired");
@@ -65,4 +66,5 @@ public class JoinCodeService {
         }
         return sb.toString();
     }
+
 }

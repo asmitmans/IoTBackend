@@ -50,51 +50,119 @@ public class Device extends PubliclyIdentifiableEntity {
     @Column(nullable = false, length = 20)
     private String status;
 
-    public Device() {}
+    public Device() {
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Account getAccount() { return account; }
-    public void setAccount(Account account) { this.account = account; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public DeviceModel getDeviceModel() { return deviceModel; }
-    public void setDeviceModel(DeviceModel deviceModel) { this.deviceModel = deviceModel; }
+    public Account getAccount() {
+        return account;
+    }
 
-    public Location getLocation() { return location; }
-    public void setLocation(Location location) { this.location = location; }
+    public void setAccount(Account account) {
+        this.account = account;
+    }
 
-    public String getSerialNumber() { return serialNumber; }
-    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+    public DeviceModel getDeviceModel() {
+        return deviceModel;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setDeviceModel(DeviceModel deviceModel) {
+        this.deviceModel = deviceModel;
+    }
 
-    public String getApiKeyHash() { return apiKeyHash; }
-    public void setApiKeyHash(String apiKeyHash) { this.apiKeyHash = apiKeyHash; }
+    public Location getLocation() {
+        return location;
+    }
 
-    public String getApiKeyPrefix() { return apiKeyPrefix; }
-    public void setApiKeyPrefix(String apiKeyPrefix) { this.apiKeyPrefix = apiKeyPrefix; }
+    public void setLocation(Location location) {
+        this.location = location;
+    }
 
-    public Instant getClaimedAt() { return claimedAt; }
-    public void setClaimedAt(Instant claimedAt) { this.claimedAt = claimedAt; }
+    public String getSerialNumber() {
+        return serialNumber;
+    }
 
-    public Instant getClaimExpiresAt() { return claimExpiresAt; }
-    public void setClaimExpiresAt(Instant claimExpiresAt) { this.claimExpiresAt = claimExpiresAt; }
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
+    }
 
-    public boolean isConfigPending() { return configPending; }
-    public void setConfigPending(boolean configPending) { this.configPending = configPending; }
+    public String getName() {
+        return name;
+    }
 
-    public boolean isCommandPending() { return commandPending; }
-    public void setCommandPending(boolean commandPending) { this.commandPending = commandPending; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getApiKeyHash() {
+        return apiKeyHash;
+    }
+
+    public void setApiKeyHash(String apiKeyHash) {
+        this.apiKeyHash = apiKeyHash;
+    }
+
+    public String getApiKeyPrefix() {
+        return apiKeyPrefix;
+    }
+
+    public void setApiKeyPrefix(String apiKeyPrefix) {
+        this.apiKeyPrefix = apiKeyPrefix;
+    }
+
+    public Instant getClaimedAt() {
+        return claimedAt;
+    }
+
+    public void setClaimedAt(Instant claimedAt) {
+        this.claimedAt = claimedAt;
+    }
+
+    public Instant getClaimExpiresAt() {
+        return claimExpiresAt;
+    }
+
+    public void setClaimExpiresAt(Instant claimExpiresAt) {
+        this.claimExpiresAt = claimExpiresAt;
+    }
+
+    public boolean isConfigPending() {
+        return configPending;
+    }
+
+    public void setConfigPending(boolean configPending) {
+        this.configPending = configPending;
+    }
+
+    public boolean isCommandPending() {
+        return commandPending;
+    }
+
+    public void setCommandPending(boolean commandPending) {
+        this.commandPending = commandPending;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Device other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Device other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 
@@ -102,4 +170,5 @@ public class Device extends PubliclyIdentifiableEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }

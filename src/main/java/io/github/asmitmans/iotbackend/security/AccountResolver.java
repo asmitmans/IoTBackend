@@ -14,26 +14,27 @@ import java.util.UUID;
 public class AccountResolver {
 
     private final AccountRepository accountRepository;
+
     private final UserRepository userRepository;
+
     private final AccountMembershipRepository accountMembershipRepository;
 
-    public AccountResolver(AccountRepository accountRepository, UserRepository userRepository, AccountMembershipRepository accountMembershipRepository) {
+    public AccountResolver(AccountRepository accountRepository, UserRepository userRepository,
+            AccountMembershipRepository accountMembershipRepository) {
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
         this.accountMembershipRepository = accountMembershipRepository;
     }
 
     /**
-     * Resolves the internal account id to operate against.
-     * Admins must supply requestedAccountId (public UUID); regular
-     * users always resolve to their own account. Non-admin resolution
-     * revalidates membership against the DB on every call — the JWT's
-     * accountId claim is a hint from issuance time, not proof of current
+     * Resolves the internal account id to operate against. Admins must supply
+     * requestedAccountId (public UUID); regular users always resolve to their own
+     * account. Non-admin resolution revalidates membership against the DB on every call —
+     * the JWT's accountId claim is a hint from issuance time, not proof of current
      * access.
      */
     public Long resolveAccountId(UserPrincipal principal, UUID requestedAccountId) {
-        boolean isAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         if (isAdmin) {
             if (requestedAccountId == null) {
@@ -52,8 +53,8 @@ public class AccountResolver {
     }
 
     /**
-     * Resolves the principal's own internal account id, or null if the
-     * principal has no associated account. Also revalidated per request.
+     * Resolves the principal's own internal account id, or null if the principal has no
+     * associated account. Also revalidated per request.
      */
     public Long resolveOwnAccountIdOrNull(UserPrincipal principal) {
         if (principal.getAccountId() == null) {
@@ -66,7 +67,7 @@ public class AccountResolver {
 
     private void assertStillMember(String username, Long accountId) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AccessDeniedException("User not found"));
+            .orElseThrow(() -> new AccessDeniedException("User not found"));
 
         if (!accountMembershipRepository.existsByUserIdAndAccountId(user.getId(), accountId)) {
             throw new AccessDeniedException("User is no longer a member of this account");
@@ -75,7 +76,8 @@ public class AccountResolver {
 
     private Long toInternalId(UUID publicId) {
         return accountRepository.findByPublicId(publicId)
-                .map(Account::getId)
-                .orElseThrow(() -> new AccessDeniedException("Account not found"));
+            .map(Account::getId)
+            .orElseThrow(() -> new AccessDeniedException("Account not found"));
     }
+
 }

@@ -22,4 +22,5 @@ public class DeviceConfigRequest {
     public void setDesired(Map<String, String> desired) {
         this.desired = desired;
     }
+
 }

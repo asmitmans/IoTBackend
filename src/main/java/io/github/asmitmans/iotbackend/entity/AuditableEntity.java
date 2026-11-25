@@ -28,6 +28,12 @@ public abstract class AuditableEntity {
         this.updatedAt = Instant.now();
     }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
 }

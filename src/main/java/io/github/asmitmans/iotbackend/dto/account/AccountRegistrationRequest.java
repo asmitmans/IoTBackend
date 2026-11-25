@@ -11,4 +11,5 @@ public class AccountRegistrationRequest {
     public void setName(String name) {
         this.name = name;
     }
+
 }

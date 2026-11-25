@@ -17,19 +17,18 @@ import java.util.stream.Collectors;
 public class MeasurementTypeService {
 
     private final MeasurementTypeRepository measurementTypeRepository;
+
     private final DeviceModelRepository deviceModelRepository;
 
-    public MeasurementTypeService(MeasurementTypeRepository measurementTypeRepository, DeviceModelRepository deviceModelRepository) {
+    public MeasurementTypeService(MeasurementTypeRepository measurementTypeRepository,
+            DeviceModelRepository deviceModelRepository) {
         this.measurementTypeRepository = measurementTypeRepository;
         this.deviceModelRepository = deviceModelRepository;
     }
 
     @Transactional(readOnly = true)
     public List<MeasurementTypeResponse> getAll() {
-        return measurementTypeRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return measurementTypeRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -39,10 +38,9 @@ public class MeasurementTypeService {
 
     @Transactional
     public MeasurementTypeResponse create(MeasurementTypeRequest request) {
-        measurementTypeRepository.findByName(request.getName())
-                .ifPresent(m -> {
-                    throw new ConflictException("MeasurementType with name '" + request.getName() + "' already exists");
-                });
+        measurementTypeRepository.findByName(request.getName()).ifPresent(m -> {
+            throw new ConflictException("MeasurementType with name '" + request.getName() + "' already exists");
+        });
 
         MeasurementType entity = new MeasurementType();
         applyRequest(entity, request);
@@ -74,7 +72,7 @@ public class MeasurementTypeService {
 
     private MeasurementType findOrThrow(Long id) {
         return measurementTypeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("MeasurementType not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("MeasurementType not found"));
     }
 
     private MeasurementTypeResponse toResponse(MeasurementType entity) {

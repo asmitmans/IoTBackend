@@ -9,12 +9,17 @@ import java.util.UUID;
 public class UserPrincipal implements UserDetails {
 
     private final String username;
+
     private final String password;
+
     private final boolean enabled;
+
     private final UUID accountId;
+
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public UserPrincipal(String username, String password, boolean enabled, UUID accountId, Collection<? extends GrantedAuthority> authorities) {
+    public UserPrincipal(String username, String password, boolean enabled, UUID accountId,
+            Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
         this.password = password;
         this.enabled = enabled;
@@ -26,31 +31,38 @@ public class UserPrincipal implements UserDetails {
         return accountId;
     }
 
-    @Override public String getUsername() {
+    @Override
+    public String getUsername() {
         return username;
     }
 
-    @Override public String getPassword() {
+    @Override
+    public String getPassword() {
         return password;
     }
 
-    @Override public boolean isEnabled() {
+    @Override
+    public boolean isEnabled() {
         return enabled;
     }
 
-    @Override public boolean isAccountNonExpired() {
+    @Override
+    public boolean isAccountNonExpired() {
         return true;
     }
 
-    @Override public boolean isAccountNonLocked() {
+    @Override
+    public boolean isAccountNonLocked() {
         return true;
     }
 
-    @Override public boolean isCredentialsNonExpired() {
+    @Override
+    public boolean isCredentialsNonExpired() {
         return true;
     }
 
-    @Override public Collection<? extends GrantedAuthority> getAuthorities() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 

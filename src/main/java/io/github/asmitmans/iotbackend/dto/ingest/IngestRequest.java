@@ -41,4 +41,5 @@ public class IngestRequest {
     public void setSequenceNumber(Long sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
+
 }

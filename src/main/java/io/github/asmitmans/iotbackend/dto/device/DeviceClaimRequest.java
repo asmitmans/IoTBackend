@@ -17,4 +17,5 @@ public class DeviceClaimRequest {
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
+
 }

@@ -17,4 +17,5 @@ public class DeviceRegistrationRequest {
     public void setDeviceModelId(Long deviceModelId) {
         this.deviceModelId = deviceModelId;
     }
+
 }

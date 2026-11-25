@@ -30,7 +30,9 @@ import static org.mockito.Mockito.*;
 public class DeviceConfigServiceTest {
 
     private static final Long DEVICE_ID = 1L;
+
     private static final Long ACCOUNT_ID = 10L;
+
     private static final Long OTHER_ACCOUNT_ID = 99L;
 
     @Mock
@@ -163,9 +165,10 @@ public class DeviceConfigServiceTest {
     void setDesiredConfig_whenDeviceBelongsToAnotherAccount_throwsNotFound() {
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(deviceOfAccount(ACCOUNT_ID)));
 
-        assertThatThrownBy(() -> service.setDesiredConfig(DEVICE_ID, desiredRequest(Map.of("interval", "60")), OTHER_ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+        assertThatThrownBy(
+                () -> service.setDesiredConfig(DEVICE_ID, desiredRequest(Map.of("interval", "60")), OTHER_ACCOUNT_ID))
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceConfigRepository);
         verify(deviceRepository, never()).save(any());
@@ -175,9 +178,10 @@ public class DeviceConfigServiceTest {
     void setDesiredConfig_whenDeviceDoesNotExist_throwsNotFound() {
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.setDesiredConfig(DEVICE_ID, desiredRequest(Map.of("interval", "60")), ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+        assertThatThrownBy(
+                () -> service.setDesiredConfig(DEVICE_ID, desiredRequest(Map.of("interval", "60")), ACCOUNT_ID))
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceConfigRepository);
     }
@@ -187,9 +191,9 @@ public class DeviceConfigServiceTest {
     @Test
     void getConfig_returnsOnlyKeysWithADesiredValue() {
         Device device = deviceOfAccount(ACCOUNT_ID);
-        when(deviceConfigRepository.findByDeviceId(DEVICE_ID)).thenReturn(List.of(
-                config(device, "interval", "60", null, "PENDING"),
-                config(device, "firmware", null, "1.2.0", "REPORTED")));
+        when(deviceConfigRepository.findByDeviceId(DEVICE_ID))
+            .thenReturn(List.of(config(device, "interval", "60", null, "PENDING"),
+                    config(device, "firmware", null, "1.2.0", "REPORTED")));
 
         DeviceConfigResponse response = service.getConfig(device);
 
@@ -202,22 +206,18 @@ public class DeviceConfigServiceTest {
     void getConfigStatus_returnsEveryKeySortedByKey() {
         Device device = deviceOfAccount(ACCOUNT_ID);
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(device));
-        when(deviceConfigRepository.findByDeviceId(DEVICE_ID)).thenReturn(List.of(
-                config(device, "threshold", "25", "20", "CONFLICT"),
-                config(device, "firmware", null, "1.2.0", "REPORTED"),
-                config(device, "interval", "60", "60", "SYNCED")));
+        when(deviceConfigRepository.findByDeviceId(DEVICE_ID))
+            .thenReturn(List.of(config(device, "threshold", "25", "20", "CONFLICT"),
+                    config(device, "firmware", null, "1.2.0", "REPORTED"),
+                    config(device, "interval", "60", "60", "SYNCED")));
 
         List<DeviceConfigStatusResponse> status = service.getConfigStatus(DEVICE_ID, ACCOUNT_ID);
 
         assertThat(status)
-                .extracting(DeviceConfigStatusResponse::getKey,
-                        DeviceConfigStatusResponse::getDesiredValue,
-                        DeviceConfigStatusResponse::getReportedValue,
-                        DeviceConfigStatusResponse::getStatus)
-                .containsExactly(
-                        tuple("firmware", null, "1.2.0", "REPORTED"),
-                        tuple("interval", "60", "60", "SYNCED"),
-                        tuple("threshold", "25", "20", "CONFLICT"));
+            .extracting(DeviceConfigStatusResponse::getKey, DeviceConfigStatusResponse::getDesiredValue,
+                    DeviceConfigStatusResponse::getReportedValue, DeviceConfigStatusResponse::getStatus)
+            .containsExactly(tuple("firmware", null, "1.2.0", "REPORTED"), tuple("interval", "60", "60", "SYNCED"),
+                    tuple("threshold", "25", "20", "CONFLICT"));
     }
 
     @Test
@@ -233,8 +233,8 @@ public class DeviceConfigServiceTest {
         when(deviceRepository.findById(DEVICE_ID)).thenReturn(Optional.of(deviceOfAccount(ACCOUNT_ID)));
 
         assertThatThrownBy(() -> service.getConfigStatus(DEVICE_ID, OTHER_ACCOUNT_ID))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessage("Device not found");
+            .isInstanceOf(ResourceNotFoundException.class)
+            .hasMessage("Device not found");
 
         verifyNoInteractions(deviceConfigRepository);
     }
@@ -281,4 +281,5 @@ public class DeviceConfigServiceTest {
         verify(deviceConfigRepository).save(saved.capture());
         return saved.getValue();
     }
+
 }

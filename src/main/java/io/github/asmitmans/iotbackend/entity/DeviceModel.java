@@ -17,22 +17,18 @@ public class DeviceModel extends AuditableEntity {
     private String name;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "device_model_measurement",  // ← correcto
+    @JoinTable(name = "device_model_measurement", // ← correcto
             joinColumns = @JoinColumn(name = "device_model_id"),
-            inverseJoinColumns = @JoinColumn(name = "measurement_type_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "measurement_type_id"))
     private Set<MeasurementType> measurementTypes = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "device_model_command",
-            joinColumns = @JoinColumn(name = "device_model_id"),
-            inverseJoinColumns = @JoinColumn(name = "command_type_id")
-    )
+    @JoinTable(name = "device_model_command", joinColumns = @JoinColumn(name = "device_model_id"),
+            inverseJoinColumns = @JoinColumn(name = "command_type_id"))
     private Set<CommandType> commandTypes = new HashSet<>();
 
-    public DeviceModel() {}
+    public DeviceModel() {
+    }
 
     public Long getId() {
         return id;
@@ -68,8 +64,10 @@ public class DeviceModel extends AuditableEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DeviceModel other)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof DeviceModel other))
+            return false;
         return id != null && id.equals(other.getId());
     }
 
@@ -77,4 +75,5 @@ public class DeviceModel extends AuditableEntity {
     public int hashCode() {
         return getClass().hashCode();
     }
+
 }
