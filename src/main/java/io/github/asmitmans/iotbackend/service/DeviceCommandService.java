@@ -43,7 +43,7 @@ public class DeviceCommandService {
             throw new ConflictException("Device is not enrolled to an account");
         }
 
-        Long effectiveAccountId = accountId != null ? accountId : device.getAccount().getId().longValue();
+        Long effectiveAccountId = accountId != null ? accountId : device.getAccount().getId();
 
         List<DeviceCommand> queuedOfSameType = deviceCommandRepository.findByDeviceIdAndStatusAndType(device.getId(),
                 "QUEUED", request.getType());

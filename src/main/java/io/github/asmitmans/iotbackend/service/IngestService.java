@@ -34,7 +34,7 @@ public class IngestService {
 
         Measurement measurement = new Measurement();
         measurement.setDevice(device);
-        measurement.setAccountId(device.getAccount().getId().longValue());
+        measurement.setAccountId(device.getAccount().getId());
         measurement.setRecordedAt(request.getRecordedAt());
         measurement.setPayload(request.getPayload());
         measurement.setSequenceNumber(request.getSequenceNumber());
