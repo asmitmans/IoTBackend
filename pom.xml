@@ -192,8 +192,7 @@
 				<configuration>
 					<effort>Max</effort>
 					<threshold>Medium</threshold>
-					<includeFilterFile>spotbugs-security-include.xml</includeFilterFile>
-					<excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>
+					<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
 					<plugins>
 						<plugin>
 							<groupId>com.h3xstream.findsecbugs</groupId>
