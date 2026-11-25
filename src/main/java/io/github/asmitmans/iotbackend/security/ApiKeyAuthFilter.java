@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
@@ -53,7 +54,8 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
     }
 
     private void authenticateDevice(String apiKey) {
-        Cache cache = cacheManager.getCache("deviceAuth");
+        Cache cache = Objects.requireNonNull(cacheManager.getCache("deviceAuth"),
+                "Cache 'deviceAuth' is not configured");
         Cache.ValueWrapper cached = cache.get(apiKey);
 
         if (cached != null) {

@@ -22,6 +22,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Tag(name = "Devices", description = "Device lifecycle, config, state and command management")
@@ -174,7 +175,7 @@ public class DeviceController {
     public ResponseEntity<Void> updateStatus(@PathVariable UUID devicePublicId, @RequestParam String status) {
         Long deviceId = deviceService.resolveDeviceId(devicePublicId);
         deviceService.updateStatus(deviceId, status);
-        cacheManager.getCache("deviceAuth").clear();
+        Objects.requireNonNull(cacheManager.getCache("deviceAuth"), "Cache 'deviceAuth' is not configured").clear();
         return ResponseEntity.ok().build();
     }
 
